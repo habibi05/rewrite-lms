@@ -209,6 +209,29 @@ Menentukan fitur legacy mana yang akan dibawa ke sistem baru.
 feature-map.md
 ```
 
+## Feature Mapping Entry
+
+Setiap feature mapping entry wajib memiliki stable ID:
+
+```text
+FM-xxx
+```
+
+`FM-xxx` merepresentasikan satu Feature Mapping entry.
+
+`feature-map.md` menjadi master reference untuk seluruh Feature Mapping dan hubungan feature dengan PRD.
+
+Setiap Feature Mapping entry menggunakan struktur:
+
+```text
+ID
+Legacy Feature
+Status
+New Feature
+Notes
+Feature PRD
+```
+
 ## Status Feature
 
 Setiap feature dapat memiliki status:
@@ -221,15 +244,36 @@ REMOVE
 NEW
 ```
 
+## Feature PRD
+
+Feature yang tidak berstatus `REMOVE` harus memiliki `Feature PRD`.
+
+`Feature PRD` berisi nama/path PRD dan harus unique.
+
+Untuk feature dengan status:
+
+```text
+REMOVE
+```
+
+`Feature PRD` menggunakan:
+
+```text
+-
+```
+
+dan feature tersebut tidak menghasilkan PRD.
+
 Contoh:
 
-| Legacy Feature | Status | New Feature | Notes           |
-| -------------- | ------ | ----------- | --------------- |
-| Course         | KEEP   | Course      | Core feature    |
-| Chapter        | KEEP   | Chapter     | Core feature    |
-| Payment        | REMOVE | —           | External system |
-| Certificate    | MODIFY | Certificate | Simplified      |
-| New Reporting  | NEW    | Reporting   | New requirement |
+| ID     | Legacy Feature  | Status | New Feature     | Notes           | Feature PRD     |
+| ------ | --------------- | ------ | --------------- | --------------- | --------------- |
+| FM-001 | Course Progress | KEEP   | Course Progress | Core feature    | course-progress |
+| FM-002 | Chapter         | KEEP   | Chapter         | Core feature    | chapter         |
+| FM-003 | Payment         | REMOVE | —               | External system | —               |
+| FM-004 | Certificate     | MODIFY | Certificate     | Simplified      | certificate     |
+| FM-005 | New Reporting   | NEW    | Reporting       | New requirement | reporting       |
+
 
 ## Gate
 
@@ -369,6 +413,36 @@ Setiap PRD minimal memiliki:
 6. Business Rules
 7. Edge Cases
 8. Acceptance Criteria
+
+Setiap PRD harus merepresentasikan feature yang memiliki `Feature PRD` pada `feature-map.md`.
+
+Nilai metadata `feature:` pada PRD harus sama dengan nilai `Feature PRD` pada Feature Mapping entry terkait.
+
+Contoh:
+```text
+feature-map.md
+
+FM-001 | Course Progress | KEEP | Course Progress | Core feature | course-progress
+```
+
+maka PRD:
+```text
+prd/course-progress.md
+```
+
+dengan metadata:
+```yaml
+---
+document: prd
+feature: course-progress
+version: 1.0
+status: DRAFT
+---
+```
+
+`feature-map.md` menjadi master reference untuk menentukan feature dan PRD yang terkait.
+
+Feature dengan status `REMOVE` tidak menghasilkan PRD.
 
 PRD harus mereferensikan business rules yang relevan.
 

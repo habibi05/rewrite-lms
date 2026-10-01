@@ -413,7 +413,7 @@ Semua artifact menggunakan stable IDs.
 | Prefix    | Meaning                                |
 | --------- | -------------------------------------- |
 | `ES-xxx`  | Existing System Finding                |
-| `FM-xxx`  | Feature Mapping                        |
+| `FM-xxx`  | Feature Mapping Entry                  |
 | `BR-xxx`  | Business Rule                          |
 | `FR-xxx`  | Functional Requirement                 |
 | `NFR-xxx` | Non-Functional Requirement             |
@@ -844,21 +844,41 @@ Create CourseProgressService::unlockNextClass().
 
 # 23. Traceability
 
-Requirement harus dapat ditelusuri dari source sampai data requirement.
+Requirement dan feature harus dapat ditelusuri dari source sampai data requirement.
+Feature Mapping menjadi referensi utama untuk hubungan antara feature mapping entry dan PRD.
+Setiap Feature Mapping entry menggunakan stable ID:
+
+```text
+FM-xxx
+```
+
+Untuk feature yang tidak berstatus REMOVE, Feature Mapping harus memiliki `Feature PRD` yang unique dan menunjuk ke PRD feature tersebut.
 
 Contoh:
 
 ```text
-Human Decision
-      ↓
 FM-001
-      ↓
+    ↓
+Feature PRD: course-progress
+    ↓
+prd/course-progress.md
+```
+
+Contoh traceability requirement:
+
+```text
+Human Decision
+    ↓
+FM-001
+    ↓
+PRD
+    ↓
 BR-014
-      ↓
+    ↓
 FR-021
-      ↓
+    ↓
 AC-034
-      ↓
+    ↓
 DB-007
 ```
 
@@ -1111,6 +1131,71 @@ Output:
 feature-map.md
 ```
 
+**feature-map.md** adalah master reference untuk Feature Mapping dan hubungan feature dengan PRD.
+
+Setiap Feature Mapping entry wajib memiliki stable ID:
+```text
+FM-xxx
+```
+
+Setiap FM-xxx merepresentasikan satu Feature Mapping entry.
+
+Feature Mapping minimal menggunakan struktur:
+
+```text
+ID
+Legacy Feature
+Status
+New Feature
+Notes
+Feature PRD
+```
+
+Contoh:
+| ID     | Legacy Feature  | Status | New Feature     | Notes        | Feature PRD     |
+| ------ | --------------- | ------ | --------------- | ------------ | --------------- |
+| FM-001 | Course Progress | KEEP   | Course Progress | Core feature | course-progress |
+| FM-002 | Payment         | REMOVE | —               | External     | —               |
+
+`Feature PRD`
+
+`Feature PRD` adalah nama/path PRD yang merepresentasikan feature tersebut.
+
+`Feature PRD` harus unique.
+
+Untuk feature yang tidak berstatus REMOVE, `Feature PRD` wajib menunjuk ke PRD yang sesuai.
+
+Untuk feature dengan status:
+```text
+REMOVE
+```
+
+`Feature PRD` harus menggunakan:
+```text
+-
+```
+
+dan feature tersebut tidak menghasilkan PRD.
+
+Nilai `Feature PRD` harus sesuai dengan nilai feature: pada metadata PRD terkait.
+
+Contoh:
+
+```text
+---
+document: prd
+feature: course-progress
+version: 1.0
+status: DRAFT
+---
+```
+
+direferensikan oleh:
+```text
+FM-001 → Feature PRD: course-progress
+```
+**feature-map.md** menjadi master reference untuk menentukan mapping feature dan PRD yang terkait.
+
 Allowed decisions:
 
 ```text
@@ -1123,6 +1208,12 @@ UNKNOWN
 ```
 
 AI must not determine business priority without human input.
+
+AI must not create a new feature based on opinion.
+
+A **NEW** feature must originate from an explicit new requirement or human/project owner decision.
+
+A feature mapping entry with status REMOVE must not generate a PRD.
 
 ---
 
@@ -1252,6 +1343,38 @@ Dependencies
 Open Questions
 Traceability
 ```
+
+PRD harus merepresentasikan feature yang memiliki `Feature PRD` pada `feature-map.md`.
+
+Nilai metadata:
+
+```yaml
+feature: <feature-prd>
+```
+
+harus sama dengan nilai `Feature PRD` pada Feature Mapping entry terkait.
+
+Contoh:
+
+```text
+feature-map.md
+FM-001 → Course Progress → course-progress
+```
+
+PRD:
+
+```yaml
+---
+document: prd
+feature: course-progress
+version: 1.0
+status: DRAFT
+---
+```
+
+PRD tidak perlu menyimpan `FM-xxx` sebagai metadata tambahan.
+
+Feature dengan status `REMOVE` tidak menghasilkan PRD.
 
 ---
 
