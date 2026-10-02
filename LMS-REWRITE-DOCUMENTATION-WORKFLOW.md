@@ -789,6 +789,61 @@ reviews/
 └── final-review.md
 ```
 
+## Final Documentation Audit
+
+Stage 8 wajib menjalankan **Final Documentation Audit Contract** pada AI Documentation Prompt Contract.
+
+Final audit minimum mencakup:
+
+```text
+Scope completeness
+Feature completeness
+Business rule coverage
+PRD consistency
+Cross-feature consistency
+Acceptance criteria coverage
+Edge case coverage
+Database coverage
+Traceability
+Open questions
+Unresolved conflicts
+Implementation leakage
+Unsupported assumptions
+```
+
+Final audit menghasilkan status audit:
+
+```text
+APPROVED
+CHANGES_REQUIRED
+```
+
+Reviewer tidak boleh memperbaiki document secara langsung. Setiap issue harus dicatat sebagai `REV-xxx` dan mengikuti Review Finding Lifecycle pada Contract.
+
+Jika terdapat perubahan pada document setelah final audit, finding yang terdampak wajib diverifikasi melalui re-review sebelum gate dapat ditutup.
+
+### Final Audit Gate
+
+Final audit menggunakan Universal Review Gate Rule pada Contract dengan status:
+
+```text
+BLOCKED
+READY_FOR_APPROVAL
+APPROVED
+```
+
+Jika final audit menghasilkan `CHANGES_REQUIRED`, atau masih terdapat unresolved CRITICAL/HIGH findings, gate berstatus `BLOCKED` dan documentation package tidak boleh dinyatakan approved.
+
+Gate dapat menjadi `READY_FOR_APPROVAL` hanya jika:
+
+- final audit selesai;
+- seluruh findings tercatat menggunakan `REV-xxx`;
+- human resolution telah diberikan untuk findings yang membutuhkan keputusan;
+- tidak ada unresolved CRITICAL/HIGH findings;
+- required revisions telah di-re-review.
+
+`APPROVED` hanya diberikan setelah project owner memberikan human approval. Status `APPROVED` pada final audit tidak menggantikan human approval.
+
 ---
 
 # 12. Final Documentation Structure
