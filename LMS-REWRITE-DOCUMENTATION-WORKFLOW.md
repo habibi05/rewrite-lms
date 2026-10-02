@@ -74,6 +74,51 @@ Source code lama tidak lagi menjadi sumber requirement utama.
 
 ---
 
+### 2.5 Review Finding dan Gate Enforcement
+
+Setiap review menggunakan stable review finding ID:
+
+```text
+REV-xxx
+```
+
+Reviewer tidak memperbaiki document secara langsung.
+
+Flow review:
+
+```text
+Document
+   ↓
+Reviewer
+   ↓
+REV-xxx Findings
+   ↓
+Human Decision
+   ↓
+Document Revision
+   ↓
+Re-review
+   ↓
+Gate
+```
+
+Sebuah stage tidak dapat melewati gate apabila masih terdapat unresolved blocking findings.
+
+Blocking findings adalah:
+
+```text
+CRITICAL
+HIGH
+```
+
+MEDIUM dan LOW harus memiliki explicit human resolution sebelum gate ditutup.
+
+Jika document berubah setelah review, finding yang terdampak harus diverifikasi kembali.
+
+Approval tidak menghapus atau mengabaikan review findings.
+
+---
+
 # 3. Documentation Workflow
 
 ```text
