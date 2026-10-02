@@ -678,6 +678,162 @@ Reviewer tidak boleh memaksakan keputusan bisnis.
 
 ---
 
+# 17.1 Review Finding Lifecycle
+
+Setiap `REV-xxx` mengikuti lifecycle berikut:
+
+```text
+OPEN
+  ↓
+IN_PROGRESS
+  ↓
+RESOLVED
+```
+
+Finding dapat menggunakan status:
+
+```text
+OPEN
+IN_PROGRESS
+RESOLVED
+ACCEPTED
+REJECTED
+SUPERSEDED
+```
+
+### OPEN
+
+Finding baru dibuat oleh reviewer dan belum memiliki resolution final.
+
+### IN_PROGRESS
+
+Human/project owner telah menentukan tindakan, tetapi perubahan yang diperlukan belum selesai atau belum diverifikasi.
+
+### RESOLVED
+
+Finding telah ditangani dan perubahan yang relevan telah diverifikasi oleh reviewer atau final audit.
+
+### ACCEPTED
+
+Human/project owner secara eksplisit menerima finding tanpa perubahan dokumen.
+
+ACCEPTED hanya valid jika keputusan tersebut tidak menyebabkan dokumen melanggar mandatory contract requirements.
+
+### REJECTED
+
+Human/project owner secara eksplisit menolak finding berdasarkan evidence atau decision yang terdokumentasi.
+
+### SUPERSEDED
+
+Finding tidak lagi berlaku karena telah digantikan oleh finding atau decision yang lebih baru.
+
+Finding tidak boleh dihapus dari historical review record.
+
+## Finding Resolution Rule
+
+Reviewer hanya membuat finding.
+
+Reviewer tidak boleh mengubah status finding menjadi:
+
+```text
+RESOLVED
+ACCEPTED
+REJECTED
+```
+
+tanpa human decision atau verification yang sesuai.
+
+Human/project owner menentukan:
+
+```text
+ACCEPT
+REJECT
+MODIFY
+REQUEST_RESEARCH
+```
+
+sebagaimana ditentukan dalam Human Decision Contract.
+
+Jika keputusan MODIFY menghasilkan perubahan pada document yang direview, document harus menjalani review ulang terhadap finding yang terdampak.
+
+## Re-review Rule
+
+Jika document berubah setelah review:
+
+```text
+Document v1.0
+    ↓
+Review
+    ↓
+REV-001
+    ↓
+Human Decision
+    ↓
+Document v1.1
+```
+
+maka REV-001 tidak otomatis dianggap resolved.
+
+Finding harus:
+
+1. tetap linked ke affected document/version,
+2. diverifikasi terhadap versi baru,
+3. kemudian ditandai RESOLVED, ACCEPTED, REJECTED, atau SUPERSEDED.
+
+Document revision tidak boleh digunakan untuk menghilangkan unresolved findings.
+
+## Gate Blocking Rule
+
+Sebuah document atau stage tidak boleh melewati review gate apabila:
+
+```text
+ada REV-xxx berstatus OPEN
+atau
+ada REV-xxx berstatus IN_PROGRESS
+```
+
+dengan severity:
+
+```text
+CRITICAL
+HIGH
+```
+
+MEDIUM dan LOW dapat diteruskan hanya jika project owner secara eksplisit menerima atau menutup finding tersebut.
+
+Tidak ada document yang boleh berstatus:
+
+```text
+APPROVED
+```
+
+selama terdapat unresolved CRITICAL atau HIGH findings.
+
+## Review-to-Approval Flow
+
+```text
+DOCUMENT
+   ↓
+IN_REVIEW
+   ↓
+REVIEW FINDINGS
+   ↓
+HUMAN DECISION
+   ↓
+DOCUMENT REVISION
+   ↓
+REVIEW / VERIFICATION
+   ↓
+NO BLOCKING FINDINGS
+   ↓
+HUMAN APPROVAL
+   ↓
+APPROVED
+```
+
+Approval tidak menggantikan review resolution.
+
+---
 # 18. Human Decision Contract
 
 Jika AI tidak dapat menentukan keputusan secara objektif, buat:
@@ -1738,6 +1894,45 @@ DOCUMENTATION APPROVED
 
 ---
 
+## 43.0 Universal Review Gate Rule
+
+Setiap mandatory review gate harus memenuhi seluruh kondisi berikut:
+
+```text
+1. Required review completed
+2. All review findings recorded using REV-xxx
+3. Human resolution recorded for findings requiring decision
+4. No unresolved CRITICAL findings
+5. No unresolved HIGH findings
+6. Required revisions have been re-reviewed
+7. Document status is APPROVED
+```
+
+Jika salah satu kondisi tersebut belum terpenuhi:
+
+```text
+GATE = BLOCKED
+```
+
+Workflow tidak boleh melanjutkan ke stage berikutnya.
+
+Human/project owner tetap memiliki authority untuk menentukan resolution, tetapi approval tidak boleh mengabaikan mandatory contract requirements.
+
+### Gate Status
+
+Setiap gate secara konseptual memiliki status:
+
+```text
+BLOCKED
+READY_FOR_APPROVAL
+APPROVED
+```
+
+READY_FOR_APPROVAL berarti seluruh review obligations telah terpenuhi dan document siap menunggu keputusan human.
+
+APPROVED hanya dapat diberikan setelah human/project owner memberikan approval.
+
+---
 # 44. Escalation Rules
 
 Complexity determines model escalation.
