@@ -517,25 +517,49 @@ reviews/
 └── cross-feature-review.md
 ```
 
-Contoh issue:
+Contoh Review Finding:
 
 ```text
-CR-001
+REV-001
 
-Conflict:
-course.md states that a Course can be deleted.
+Severity: HIGH
 
-course-progress.md does not define what happens
-to progress records when the Course is deleted.
+Category: CONTRADICTION
 
-Impact:
-Data lifecycle is undefined.
+Affected ID:
+- PRD-Course
+- PRD-Course-Progress
 
-Action:
-Project owner must define expected behavior.
+Claim:
+Course can be deleted.
+
+Evidence:
+...
+
+Problem:
+Course deletion behavior is not defined for course progress records.
+
+Required Resolution:
+Project owner must define the expected lifecycle behavior.
+
+Status:
+OPEN
 ```
 
 Reviewer tidak boleh menyelesaikan ambiguity secara diam-diam.
+
+## Gate
+
+Project owner menentukan resolution setiap REV-xxx.
+
+Stage tidak boleh dianggap selesai selama masih terdapat:
+
+- unresolved CRITICAL finding
+- unresolved HIGH finding
+
+Untuk MEDIUM dan LOW, finding harus memiliki explicit human resolution.
+
+Jika resolution menghasilkan perubahan pada document, document wajib kembali melalui review yang relevan sebelum gate dapat ditutup.
 
 ## Gate
 
