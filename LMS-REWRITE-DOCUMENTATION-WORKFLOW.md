@@ -704,6 +704,44 @@ Database design harus menjawab:
 
 > "Data apa yang dibutuhkan untuk mendukung requirement dan business rules?"
 
+## Database Review
+
+Database design wajib menjalani review sesuai **Database Review Contract** pada AI Documentation Prompt Contract.
+
+Review minimum mencakup:
+
+```text
+Database ↔ Requirements
+Database ↔ Business Rules
+Database ↔ PRD
+Entities ↔ Relationships
+Relationships ↔ Constraints
+Data lifecycle
+Nullable behavior
+Uniqueness / integrity constraints
+Traceability
+Unsupported assumptions
+Implementation leakage
+```
+
+Reviewer tidak boleh mengubah database design secara langsung. Review menghasilkan REV-xxx findings dan mengikuti Review Finding Lifecycle.
+
+Jika database design berubah setelah review, finding yang terdampak wajib diverifikasi melalui re-review.
+
+## Gate
+
+Database gate mengikuti Universal Review Gate Rule:
+
+```text
+BLOCKED
+READY_FOR_APPROVAL
+APPROVED
+```
+
+Gate hanya dapat menjadi READY_FOR_APPROVAL jika required database review selesai, findings tercatat, human resolution telah diberikan untuk findings yang membutuhkan keputusan, tidak ada unresolved CRITICAL/HIGH, dan required revisions telah di-re-review.
+
+APPROVED hanya diberikan setelah project owner memberikan human approval.
+
 ---
 
 # 11. Stage 8 — Final Consistency Review
