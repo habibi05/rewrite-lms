@@ -219,18 +219,30 @@ Dokumen harus menjelaskan:
 * Existing integrations
 * Existing edge cases yang ditemukan
 
-Behavior harus dibedakan berdasarkan tingkat kepastian.
+Setiap informasi penting harus menggunakan **Evidence Classification** yang sama dengan AI Documentation Prompt Contract.
 
-Contoh:
+Allowed classifications:
 
 ```text
-CONFIRMED
-INFERRED
-UNCERTAIN
+FACT
+DERIVED
+REQUIREMENT
+DECISION
 UNKNOWN
+CONFLICT
 ```
 
-AI tidak boleh mengubah inference menjadi fact tanpa bukti.
+Untuk hasil analysis, `Confidence` dapat digunakan sebagai metadata tambahan dengan nilai:
+
+```text
+HIGH
+MEDIUM
+LOW
+```
+
+`Confidence` tidak menggantikan `Classification` dan tidak menjadi bukti.
+
+AI tidak boleh mengubah `DERIVED` menjadi `FACT`, atau `UNKNOWN`/`CONFLICT` menjadi classification lain, tanpa evidence atau human decision yang sesuai.
 
 ## Gate
 
