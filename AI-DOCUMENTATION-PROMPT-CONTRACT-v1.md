@@ -1748,6 +1748,30 @@ Rename
 
 No migration or implementation is produced during this phase.
 
+## 41.1 Database Review Contract
+
+Database design wajib direview terhadap sumber requirement yang menjadi inputnya.
+
+Review minimum mencakup:
+
+```text
+Database ↔ Requirements
+Database ↔ Business Rules
+Database ↔ PRD
+Entities ↔ Relationships
+Relationships ↔ Constraints
+Data lifecycle
+Nullable behavior
+Uniqueness / integrity constraints
+Traceability
+Unsupported assumptions
+Implementation leakage
+```
+
+Reviewer tidak boleh diam-diam mengubah database design. Review menghasilkan REV-xxx findings dan mengikuti Review Finding Lifecycle serta Universal Review Gate Rule.
+
+Jika database design berubah setelah review, finding yang terdampak wajib diverifikasi melalui re-review sebelum gate dapat ditutup.
+
 ---
 
 # 42. Final Documentation Audit Contract
