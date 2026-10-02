@@ -540,6 +540,41 @@ JSON column
 Specific migration implementation
 ```
 
+## PRD Review
+
+Setiap PRD wajib menjalani review sesuai **PRD Review Contract** pada AI Documentation Prompt Contract.
+
+Review minimum mencakup:
+
+```text
+PRD ↔ Scope
+PRD ↔ Business Rules
+PRD ↔ Existing System
+PRD ↔ Other PRDs
+FR ↔ AC
+Edge Cases
+Dependencies
+Unknowns
+```
+
+Reviewer tidak boleh rewrite PRD secara langsung. Review menghasilkan REV-xxx findings dan mengikuti Review Finding Lifecycle serta Universal Review Gate Rule dari Contract.
+
+Jika terdapat perubahan pada PRD setelah review, finding yang terdampak wajib diverifikasi melalui re-review sebelum gate dapat ditutup.
+
+## Gate
+
+Gate PRD mengikuti status gate universal:
+
+```text
+BLOCKED
+READY_FOR_APPROVAL
+APPROVED
+```
+
+Gate hanya dapat menjadi READY_FOR_APPROVAL jika required PRD review selesai, findings tercatat, human resolution telah diberikan untuk findings yang membutuhkan keputusan, tidak ada unresolved CRITICAL/HIGH, dan required revisions telah di-re-review.
+
+APPROVED hanya diberikan setelah project owner memberikan human approval.
+
 ---
 
 # 9. Stage 6 — Cross-Feature Review
