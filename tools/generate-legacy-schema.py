@@ -22,7 +22,7 @@ Environment:
 
 Usage:
     python tools/generate-legacy-schema.py
-    python tools/generate-legacy-schema.py --output docs/analysis/legacy-schema-snapshot.md
+    python tools/generate-legacy-schema.py --output analysis/legacy-schema-snapshot.md
     python tools/generate-legacy-schema.py --database legacy_lms
 """
 
@@ -47,7 +47,7 @@ except ImportError:
     raise SystemExit(1)
 
 
-DEFAULT_OUTPUT = "docs/analysis/legacy-schema-snapshot.md"
+DEFAULT_OUTPUT = "analysis/legacy-schema-snapshot.md"
 
 
 def get_env(name: str, default: str | None = None, required: bool = False) -> str:
