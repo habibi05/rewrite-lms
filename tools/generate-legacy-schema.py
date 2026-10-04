@@ -7,6 +7,7 @@ insert, update, or delete any database object or data.
 
 Dependency:
     pip install mysql-connector-python
+    pip install python-dotenv
 
 Authentication:
     Prefer a MySQL client option file (for example ~/.my.cnf) or another
@@ -14,6 +15,10 @@ Authentication:
     does not write or store database credentials.
 
 Environment:
+    The script loads tools/.env when present. Existing environment variables
+    are intentionally overridden by that file so the local generator config
+    is deterministic.
+
     MYSQL_HOST       default: 127.0.0.1
     MYSQL_PORT       default: 3306
     MYSQL_DATABASE   required
@@ -46,8 +51,19 @@ except ImportError:
     )
     raise SystemExit(1)
 
+try:
+    from dotenv import load_dotenv
+except ImportError:
+    print(
+        "Missing dependency: python-dotenv. "
+        "Install it with: pip install python-dotenv",
+        file=sys.stderr,
+    )
+    raise SystemExit(1)
+
 
 DEFAULT_OUTPUT = "analysis/legacy-schema-snapshot.md"
+ENV_FILE = Path(__file__).resolve().parent / ".env"
 
 
 def get_env(name: str, default: str | None = None, required: bool = False) -> str:
@@ -60,7 +76,7 @@ def get_env(name: str, default: str | None = None, required: bool = False) -> st
 def md_cell(value: Any) -> str:
     if value is None:
         return "—"
-    return str(value).replace("|", "\\|").replace("\n", " ")
+    return str(value).replace("|", "\|").replace("\n", " ")
 
 
 def fetch_all(cursor, sql: str, params: tuple[Any, ...] = ()) -> list[dict[str, Any]]:
@@ -79,6 +95,8 @@ def main() -> int:
     )
     parser.add_argument("--database", default=None, help="Override MYSQL_DATABASE.")
     args = parser.parse_args()
+
+    load_dotenv(ENV_FILE, override=True)
 
     host = get_env("MYSQL_HOST", "127.0.0.1")
     port = int(get_env("MYSQL_PORT", "3306"))
