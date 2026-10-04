@@ -1019,6 +1019,38 @@ Conflict Evidence
 ```
 
 
+## Requirement Baseline Control
+
+Requirement candidate dan requirement baseline WAJIB mengikuti `REQUIREMENT-BASELINE-CONVENTION-v1.md`.
+
+Flow minimum:
+
+```
+Candidate
+  ↓
+Source / Evidence Analysis
+  ↓
+OQ / CON bila ambigu atau konflik
+  ↓
+Human Decision bila diperlukan
+  ↓
+Review
+  ↓
+Requirement Baseline
+  ↓
+PRD / Business Rule / Acceptance Criteria / Database
+```
+
+Legacy behavior tidak otomatis menjadi requirement baru. Model inference tidak dapat menjadi authoritative requirement source.
+
+Requirement yang masih candidate, memiliki unresolved material OQ/CON, membutuhkan human decision, gagal required review, atau kehilangan required traceability tidak boleh diperlakukan sebagai baseline dan dapat memblokir downstream work.
+
+Workflow boleh menemukan, mengklarifikasi, menguji, dan mengusulkan perubahan requirement, tetapi tidak boleh diam-diam mengubah requirement baseline.
+
+Perubahan setelah baseline wajib mengikuti controlled revision, menjaga stable requirement ID bila identity tetap sama, mengevaluasi downstream impact, dan menjalani re-review yang diwajibkan.
+
+---
+
 ## Human Decision Storage
 
 Seluruh Human Decision yang menjadi keputusan authoritative WAJIB direkam sebagai Decision Artifact sesuai HUMAN-DECISION-CONVENTION-v1.md.
