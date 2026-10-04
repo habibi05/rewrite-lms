@@ -76,7 +76,7 @@ Source code lama tidak lagi menjadi sumber requirement utama.
 
 ### 2.5 Review Finding dan Gate Enforcement
 
-Setiap review menggunakan stable review finding ID:
+Setiap official review menggunakan Review Artifact yang mengikuti `REVIEW-ARTIFACT-CONVENTION-v1.md` dan memiliki stable artifact identity `ART-xxx`. Review findings di dalamnya menggunakan stable finding ID:
 
 ```text
 REV-xxx
