@@ -550,46 +550,29 @@ Reviewer tidak boleh mengubah finding menjadi RESOLVED, ACCEPTED, atau REJECTED 
 
 ---
 
-# 18. Human Decision Contract
+# 18. Human Decision Convention
 
-Jika AI tidak dapat menentukan keputusan secara objektif, buat:
+Human Decision artifact structure, identity, storage, authority boundary, lifecycle, supersession, and traceability are governed by:
 
-```text
-HD-xxx
-```
+**Human Decision Convention**
 
-atau:
+See:
 
-```text
-OQ-xxx
-```
+HUMAN-DECISION-CONVENTION-v1.md
 
-Human dapat memilih:
+Official Human Decision menggunakan canonical artifact identity:
 
-```text
-ACCEPT
-REJECT
-MODIFY
-REQUEST_RESEARCH
-```
+ART-xxx
 
-Example:
+Tidak ada HD-xxx sebagai identity canonical.
 
-```markdown
-### HD-003
+Human Decision harus dibedakan dari recommendation, review finding (REV-xxx), open question (OQ-xxx), conflict (CON-xxx), requirement, dan approval.
 
-**Decision**
-Quiz feature will be removed from the new LMS.
+AI boleh menganalisis, menyajikan evidence, opsi, recommendation, dan draft decision artifact. AI tidak boleh menetapkan authoritative decision tanpa explicit human authority.
 
-**Source**
-Project Owner
+Human Decision menjadi authority tertinggi setelah decision ditetapkan oleh human authority yang berwenang sesuai workflow.
 
-**Affected**
-- FM-017
-- PRD Quiz
-```
-
-Human decisions menjadi authority tertinggi setelah ditetapkan.
+Decision artifact tidak otomatis mengubah downstream artifact; artifact terdampak harus direvisi dan direview melalui workflow yang berlaku.
 
 ---
 
