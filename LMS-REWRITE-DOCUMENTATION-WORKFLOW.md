@@ -984,6 +984,41 @@ Semua hal tersebut baru dibahas **setelah documentation package dinyatakan appro
 
 
 
+## Open Question & Conflict Storage
+
+Open Question dan Conflict WAJIB mengikuti `OPEN-QUESTION-CONFLICT-CONVENTION-v1.md`.
+
+- Open Question artifacts disimpan pada `open-questions/*.md`.
+- Conflict artifacts disimpan pada `conflicts/*.md`.
+- Artifact identity menggunakan `ART-xxx`; record menggunakan `OQ-xxx` / `CON-xxx`.
+- AI tidak boleh menyelesaikan unresolved question atau conflict secara diam-diam.
+- Bila membutuhkan authority, item dieskalasikan ke Human Decision artifact menggunakan `ART-xxx`.
+- Resolution harus tercermin pada affected artifacts dan menjalani re-review bila diwajibkan.
+- Material unresolved items dapat memblokir downstream completion/gate sesuai convention.
+
+Flow:
+
+```text
+UNKNOWN / AMBIGUOUS
+        ↓
+     OQ-xxx
+        ↓
+ Human Decision
+        ↓
+ Artifact Revision
+
+Conflict Evidence
+        ↓
+    CON-xxx
+        ↓
+ Human Decision
+        ↓
+ Artifact Revision
+        ↓
+   Re-review
+```
+
+
 ## Human Decision Storage
 
 Seluruh Human Decision yang menjadi keputusan authoritative WAJIB direkam sebagai Decision Artifact sesuai HUMAN-DECISION-CONVENTION-v1.md.
