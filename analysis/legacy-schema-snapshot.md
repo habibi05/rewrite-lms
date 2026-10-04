@@ -11,7 +11,7 @@
 |---|---|
 | Source | Live MySQL INFORMATION_SCHEMA |
 | Database | project_insmart |
-| Generated at (UTC) | 2026-10-04T11:37:25+00:00 |
+| Generated at (UTC) | 2026-10-04T11:42:51+00:00 |
 | Generator | generate-legacy-schema.py |
 | Tables / Views | 175 |
 
