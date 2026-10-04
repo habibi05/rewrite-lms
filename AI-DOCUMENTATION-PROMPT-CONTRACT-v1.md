@@ -451,37 +451,15 @@ Jangan recycle ID.
 
 # 12. Document Status
 
-Allowed document statuses:
+Document lifecycle status, semantics, allowed values, transitions, ownership, and approval boundaries are governed by:
 
-```text
-DRAFT
-IN_REVIEW
-CHANGES_REQUIRED
-APPROVED
-SUPERSEDED
-```
+**Artifact & Metadata Convention**
 
-## DRAFT
+See:
 
-Dokumen masih dikerjakan.
+`ARTIFACT-METADATA-CONVENTION-v1.md`
 
-## IN_REVIEW
-
-Dokumen sedang diperiksa reviewer.
-
-## CHANGES_REQUIRED
-
-Review menemukan issue yang harus diselesaikan.
-
-## APPROVED
-
-Human/project owner telah menyetujui dokumen.
-
-Dokumen berstatus APPROVED dapat menjadi source of truth untuk tahap berikutnya.
-
-## SUPERSEDED
-
-Dokumen telah digantikan oleh versi yang lebih baru.
+The Master Contract does not maintain a second lifecycle vocabulary.
 
 ---
 
@@ -497,68 +475,32 @@ See:
 
 Every official document MUST comply with that convention.
 
-# 14. Review Severity
+# 14. Review Severity and Review Artifact
 
-Review findings menggunakan empat severity.
+Review severity and finding semantics remain governed by this Master Contract. The structure, identity, target-version binding, finding registry, review result, gate-readiness record, and re-review structure of a Review Artifact are governed by:
 
-| Severity   | Meaning                                                                   |
-| ---------- | ------------------------------------------------------------------------- |
-| `CRITICAL` | Dokumen tidak aman dijadikan source of truth                              |
-| `HIGH`     | Berpotensi menyebabkan implementation/requirement salah secara signifikan |
-| `MEDIUM`   | Ambiguity atau gap yang harus diperjelas                                  |
-| `LOW`      | Minor clarity/documentation issue                                         |
+**Review Artifact Convention**
 
----
+See:
 
-## 14.1 CRITICAL
+`REVIEW-ARTIFACT-CONVENTION-v1.md`
 
-Contoh:
+Baseline severity:
 
 ```text
-PRD mengatakan Class dapat diakses tanpa enrollment.
-
-Business Rules mengatakan enrollment wajib.
-
+CRITICAL
+HIGH
+MEDIUM
+LOW
 ```
 
-Dokumen tidak boleh APPROVED sebelum conflict diselesaikan.
-
----
-
-## 14.2 HIGH
-
-Contoh:
-
-```text
-Requirement menyebut refund,
-tetapi tidak menentukan state course access setelah refund.
-```
-
----
-
-## 14.3 MEDIUM
-
-Contoh:
-
-```text
-Tidak jelas apakah progress di-reset ketika user melakukan enrollment ulang.
-```
-
----
-
-## 14.4 LOW
-
-Contoh:
-
-```text
-Terminology "lesson" dan "class" digunakan secara tidak konsisten.
-```
+CRITICAL/HIGH findings block applicable review gates until resolved or otherwise explicitly handled under the human decision rules. MEDIUM/LOW follow the applicable gate rules.
 
 ---
 
 # 15. Review Categories
 
-Reviewer dapat menggunakan category berikut:
+Reviewer may use the established review categories, including:
 
 ```text
 UNSUPPORTED_CLAIM
@@ -585,87 +527,15 @@ OTHER
 
 # 16. Reviewer Non-Rewrite Rule
 
-Reviewer tidak boleh diam-diam memperbaiki document yang direview.
-
-Reviewer hanya menghasilkan findings.
-
-Correct flow:
-
-```text
-Document
-   ↓
-Reviewer
-   ↓
-Review Findings
-   ↓
-Human Decision
-   ↓
-Document Revision
-```
-
-Incorrect flow:
-
-```text
-Document
-   ↓
-Reviewer
-   ↓
-Reviewer silently rewrites document
-```
+Reviewer tidak boleh diam-diam memperbaiki document yang direview. Reviewer menghasilkan findings; target artifact direvisi oleh role/authority yang berwenang.
 
 ---
 
-# 17. Standard Review Finding Format
+# 17. Review Finding Format and Lifecycle
 
-```markdown
-### REV-001
+Standard finding structure, Review Artifact structure, target version binding, finding registry, re-review linkage, review result, dan gate-readiness record are governed by `REVIEW-ARTIFACT-CONVENTION-v1.md`.
 
-**Severity:** HIGH
-
-**Category:** UNSUPPORTED_CLAIM
-
-**Affected ID:** ES-014
-
-**Claim**
-...
-
-**Evidence**
-...
-
-**Problem**
-...
-
-**Required Resolution**
-...
-
-**Status**
-OPEN
-```
-
-Reviewer harus menjelaskan:
-
-1. apa yang bermasalah
-2. evidence yang mendukung finding
-3. mengapa masalah tersebut penting
-4. apa yang perlu diputuskan atau diverifikasi
-
-Reviewer tidak boleh memaksakan keputusan bisnis.
-
----
-
-# 17.1 Review Finding Lifecycle
-
-Setiap `REV-xxx` mengikuti lifecycle berikut:
-
-```text
-OPEN
-  ↓
-IN_PROGRESS
-  ↓
-RESOLVED
-```
-
-Finding dapat menggunakan status:
+Every finding uses `REV-xxx` and the lifecycle:
 
 ```text
 OPEN
@@ -676,139 +546,10 @@ REJECTED
 SUPERSEDED
 ```
 
-### OPEN
-
-Finding baru dibuat oleh reviewer dan belum memiliki resolution final.
-
-### IN_PROGRESS
-
-Human/project owner telah menentukan tindakan, tetapi perubahan yang diperlukan belum selesai atau belum diverifikasi.
-
-### RESOLVED
-
-Finding telah ditangani dan perubahan yang relevan telah diverifikasi oleh reviewer atau final audit.
-
-### ACCEPTED
-
-Human/project owner secara eksplisit menerima finding tanpa perubahan dokumen.
-
-ACCEPTED hanya valid jika keputusan tersebut tidak menyebabkan dokumen melanggar mandatory contract requirements.
-
-### REJECTED
-
-Human/project owner secara eksplisit menolak finding berdasarkan evidence atau decision yang terdokumentasi.
-
-### SUPERSEDED
-
-Finding tidak lagi berlaku karena telah digantikan oleh finding atau decision yang lebih baru.
-
-Finding tidak boleh dihapus dari historical review record.
-
-## Finding Resolution Rule
-
-Reviewer hanya membuat finding.
-
-Reviewer tidak boleh mengubah status finding menjadi:
-
-```text
-RESOLVED
-ACCEPTED
-REJECTED
-```
-
-tanpa human decision atau verification yang sesuai.
-
-Human/project owner menentukan:
-
-```text
-ACCEPT
-REJECT
-MODIFY
-REQUEST_RESEARCH
-```
-
-sebagaimana ditentukan dalam Human Decision Contract.
-
-Jika keputusan MODIFY menghasilkan perubahan pada document yang direview, document harus menjalani review ulang terhadap finding yang terdampak.
-
-## Re-review Rule
-
-Jika document berubah setelah review:
-
-```text
-Document v1.0
-    ↓
-Review
-    ↓
-REV-001
-    ↓
-Human Decision
-    ↓
-Document v1.1
-```
-
-maka REV-001 tidak otomatis dianggap resolved.
-
-Finding harus:
-
-1. tetap linked ke affected document/version,
-2. diverifikasi terhadap versi baru,
-3. kemudian ditandai RESOLVED, ACCEPTED, REJECTED, atau SUPERSEDED.
-
-Document revision tidak boleh digunakan untuk menghilangkan unresolved findings.
-
-## Gate Blocking Rule
-
-Sebuah document atau stage tidak boleh melewati review gate apabila:
-
-```text
-ada REV-xxx berstatus OPEN
-atau
-ada REV-xxx berstatus IN_PROGRESS
-```
-
-dengan severity:
-
-```text
-CRITICAL
-HIGH
-```
-
-MEDIUM dan LOW dapat diteruskan hanya jika project owner secara eksplisit menerima atau menutup finding tersebut.
-
-Tidak ada document yang boleh berstatus:
-
-```text
-APPROVED
-```
-
-selama terdapat unresolved CRITICAL atau HIGH findings.
-
-## Review-to-Approval Flow
-
-```text
-DOCUMENT
-   ↓
-IN_REVIEW
-   ↓
-REVIEW FINDINGS
-   ↓
-HUMAN DECISION
-   ↓
-DOCUMENT REVISION
-   ↓
-REVIEW / VERIFICATION
-   ↓
-NO BLOCKING FINDINGS
-   ↓
-HUMAN APPROVAL
-   ↓
-APPROVED
-```
-
-Approval tidak menggantikan review resolution.
+Reviewer tidak boleh mengubah finding menjadi RESOLVED, ACCEPTED, atau REJECTED tanpa human decision atau verification yang sesuai. Findings tidak boleh dihapus dari historical review record.
 
 ---
+
 # 18. Human Decision Contract
 
 Jika AI tidak dapat menentukan keputusan secara objektif, buat:
