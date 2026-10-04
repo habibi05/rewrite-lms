@@ -21,7 +21,8 @@ Role ini WAJIB beroperasi dalam batasan yang ditetapkan oleh:
 1. Master Contract v1
 2. Documentation Workflow
 3. Artifact & Metadata Convention
-4. Human Decision Convention
+4. Requirement Baseline Convention
+5. Human Decision Convention
 5. Open Question & Conflict Convention
 6. Folder Structure
 7. Role-Specific Contract ini
