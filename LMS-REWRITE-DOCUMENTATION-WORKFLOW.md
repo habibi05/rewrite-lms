@@ -982,6 +982,26 @@ Semua hal tersebut baru dibahas **setelah documentation package dinyatakan appro
 
 ---
 
+
+
+## Human Decision Storage
+
+Seluruh Human Decision yang menjadi keputusan authoritative WAJIB direkam sebagai Decision Artifact sesuai HUMAN-DECISION-CONVENTION-v1.md.
+
+Decision artifact menggunakan ART-xxx dan disimpan pada decisions/. Tidak ada HD-xxx sebagai identity canonical.
+
+Flow:
+
+    REV-xxx / OQ-xxx / CON-xxx
+                ↓
+        Human Decision ART-xxx
+                ↓
+        Document Revision
+                ↓
+          Re-review / Gate
+
+Human Decision tidak sama dengan approval. Approval tetap mengikuti gate dan authority yang berlaku.
+
 # 17. Core Principle
 
 > **Understand → Decide → Specify → Review → Approve → Only Then Build**
