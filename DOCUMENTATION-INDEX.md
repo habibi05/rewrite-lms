@@ -32,6 +32,7 @@ The index should not contain detailed findings or duplicate artifact content.
 | Artifact ID | Title | Type | Status | Location | Related / Depends On |
 | ----------- | ----- | ---- | ------ | -------- | -------------------- |
 | — | HUMAN-DECISION-CONVENTION-v1 | CONVENTION | APPROVED | HUMAN-DECISION-CONVENTION-v1.md | ARTIFACT-METADATA-CONVENTION |
+| — | OPEN-QUESTION-CONFLICT-CONVENTION-v1 | CONVENTION | APPROVED | OPEN-QUESTION-CONFLICT-CONVENTION-v1.md | ARTIFACT-METADATA-CONVENTION, HUMAN-DECISION-CONVENTION |
 
 
 | Artifact ID | Title | Type | Status | Location | Related / Depends On |
@@ -123,7 +124,15 @@ No registered artifacts yet.
 
 ### Decisions
 
-No registered artifacts yet.
+No registered project decision artifacts yet.
+
+### Open Questions
+
+No registered Open Question artifacts yet.
+
+### Conflicts
+
+No registered Conflict artifacts yet.
 
 ### PRD
 
