@@ -1035,90 +1035,112 @@ Tidak semua requirement harus memiliki database entity.
 
 Model tidak meneruskan conversation history sebagai primary context.
 
-Handoff dilakukan melalui artifact.
+Handoff dilakukan melalui artifact dan context package yang didefinisikan oleh:
 
-Example:
+**Handoff Manifest Convention**
 
-```text
-Opus
- ↓
-analysis/existing-system.md
- ↓
-Terra Review
- ↓
-review findings
-```
+See:
 
-Model berikutnya menerima document yang relevan, bukan seluruh conversation.
+`HANDOFF-MANIFEST-CONVENTION-v1.md`
+
+Handoff identity menggunakan:
+
+- `ART-xxx` untuk manifest artifact identity.
+- `HOF-xxx` untuk handoff instance identity.
+
+Role Contract tetap menentukan apa yang dilakukan receiver. Handoff Convention menentukan bounded context yang diteruskan.
 
 ---
 
 # 25. Context Package
 
-Untuk handoff antar model, gunakan context package.
+Untuk handoff antar model, gunakan context package sesuai Handoff Manifest Convention.
 
-Example:
+Baseline structure:
 
 ```text
 handoff/
 ├── manifest.md
 ├── source/
-│   ├── scope.md
-│   ├── business-rules.md
-│   └── feature-map.md
 ├── target/
-│   └── course.md
 └── instructions.md
 ```
+
+`manifest.md` adalah authoritative definition of the handoff package.
+
+`instructions.md` tidak boleh override manifest atau governing contracts.
+
+Copied files di dalam package adalah context snapshots, bukan source-of-truth artifacts baru, kecuali secara eksplisit diregistrasikan sebagai artifact.
 
 ---
 
 # 26. Handoff Manifest
 
-Setiap handoff harus menjelaskan:
+Setiap handoff WAJIB menggunakan manifest yang comply dengan:
 
-```markdown
-# Handoff Manifest
+`HANDOFF-MANIFEST-CONVENTION-v1.md`
 
-## Purpose
+Minimum manifest metadata:
 
-Apa yang harus dilakukan model berikutnya.
-
-## Source Documents
-
-Daftar document yang menjadi input.
-
-## Target Document
-
-Document yang sedang diproses.
-
-## Expected Output
-
-Output yang diharapkan.
-
-## Restrictions
-
-Hal yang tidak boleh dilakukan.
-
-## Review Scope
-
-Bagian yang harus diperiksa.
+```yaml
+---
+document: HANDOFF
+artifact_id: ART-xxx
+handoff_id: HOF-xxx
+version: 1.0
+status: DRAFT
+owner: <role-or-authority>
+from_role: <sender-role>
+to_role: <receiver-role>
+purpose: <handoff-purpose>
+---
 ```
+
+Manifest WAJIB mendefinisikan, sesuai applicability:
+
+- source artifact registry
+- target definition
+- handoff purpose
+- expected output
+- in-scope / out-of-scope
+- restrictions
+- known open questions
+- known conflicts
+- review scope
+- evidence boundary
+- completion criteria
+- context package structure
+
+Manifest tidak memberikan approval authority.
+
+`completion` tidak sama dengan approval.
 
 ---
 
 # 27. Handoff Rules
 
-Model penerima wajib:
+Sender WAJIB:
 
-* membaca manifest
-* membaca source documents
-* membaca target document
-* mengikuti universal contract
-* tidak menganggap source document sebagai perfect
-* tidak mengubah human decisions
-* tidak menghilangkan unresolved questions
-* tidak menyelesaikan conflicts secara diam-diam
+* memberikan manifest dengan identity dan metadata yang valid
+* meregistrasikan source menggunakan stable artifact IDs
+* mendefinisikan target, purpose, expected output, dan applicable constraints
+* mempertahankan known open questions dan conflicts
+* menjaga evidence boundary dan completion criteria
+
+Receiver WAJIB:
+
+* membaca manifest sebelum memproses handoff
+* membaca source artifacts yang diwajibkan
+* membaca target artifact bila ada
+* mengikuti Master Contract, Artifact & Metadata Convention, Handoff Manifest Convention, dan Role-Specific Contract yang applicable
+* mematuhi scope dan restrictions
+* mempertahankan unresolved questions dan conflicts
+* menggunakan evidence sesuai evidence boundary
+* tidak mengambil business decision atau approval authority yang tidak diberikan
+
+Receiver tidak boleh menganggap source artifact selalu sempurna dan tidak boleh menyelesaikan conflicts secara diam-diam.
+
+Handoff tidak boleh digunakan untuk mengubah role responsibility, business decision, approval authority, atau higher-authority contract.
 
 ---
 
