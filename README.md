@@ -35,100 +35,52 @@ The flow is intentionally separated so that observed evidence, analytical findin
 
 ## Directory Structure
 
-### `source/`
+The GitHub repository root (`./`) is the canonical root for all Rewrite LMS documentation artifacts.
 
-Contains source material and raw evidence used by the documentation process.
+> **Legacy project context:** this repository is intentionally located inside the legacy project's `docs/` directory. Therefore, `docs/` is a filesystem location in the legacy project, not a directory that should be recreated inside this repository.
 
-Examples:
+```text
+./
+├── AI-DOCUMENTATION-PROMPT-CONTRACT-v1.md
+├── LMS-REWRITE-DOCUMENTATION-WORKFLOW.md
+├── DOCUMENTATION-INDEX.md
+├── ROLE-SPECIFIC-CONTRACT-TEMPLATE.md
+├── ROLE-SPECIFIC-CONTRACT-*.md
+│
+├── analysis/
+│   ├── existing-system.md
+│   └── legacy-schema-snapshot.md
+│
+├── scope.md
+├── feature-map.md
+├── business-rules.md
+├── database.md
+│
+├── prd/
+│   └── <feature>.md
+│
+├── reviews/
+│   ├── cross-feature-review.md
+│   └── final-review.md
+│
+└── tools/
+    └── generate-legacy-schema.py
+```
 
-* legacy source code references
-* existing documentation
-* screenshots
-* database/schema references
-* API definitions
-* configuration references
-* external/reference materials
+### Canonical Artifact Paths
 
-Source material should remain distinguishable from AI-generated interpretation.
+All workflow and role-specific contracts use paths relative to this repository root:
 
----
+* `analysis/existing-system.md`
+* `analysis/legacy-schema-snapshot.md`
+* `scope.md`
+* `feature-map.md`
+* `business-rules.md`
+* `prd/*.md`
+* `database.md`
+* `reviews/*.md`
 
-### `analysis/`
-
-Contains analytical artifacts derived from source evidence.
-
-Subdirectories:
-
-* `reverse-engineering/` — system and legacy behavior analysis
-* `domain/` — domain concepts and relationships
-* `architecture/` — architectural analysis
-* `data/` — data model and persistence analysis
-* `workflow/` — process and workflow analysis
-* `open-questions/` — unresolved questions requiring clarification or decision
-
-Analysis must preserve traceability to its supporting evidence.
-
----
-
-### `prd/`
-
-Contains product requirements and specification artifacts that have progressed beyond raw analysis.
-
-Subdirectories:
-
-* `requirements/` — functional and non-functional requirements
-* `user-flows/` — user and system flows
-* `business-rules/` — documented business rules
-* `acceptance-criteria/` — testable acceptance criteria
-
-Analysis findings must not automatically become requirements without the appropriate review or decision process.
-
----
-
-### `review/`
-
-Contains review-related artifacts.
-
-Subdirectories:
-
-* `ai-review/` — AI-generated review findings
-* `human-review/` — human review records
-* `conflicts/` — conflicting evidence or interpretations
-* `unresolved/` — issues that remain unresolved
-
-Review artifacts should preserve the distinction between findings, questions, and decisions.
-
----
-
-### `decisions/`
-
-Contains explicit decisions that affect the documentation or rewrite direction.
-
-Subdirectories:
-
-* `ADR/` — Architecture Decision Records and significant technical decisions
-* `decision-log/` — other documented decisions
-
-A decision should identify its context, supporting evidence, decision owner, status, and affected artifacts where applicable.
-
-AI analysis must not be presented as a human decision.
-
----
-
-### `handoff/`
-
-Contains curated outputs intended for downstream roles.
-
-Subdirectories:
-
-* `engineering/` — engineering-facing context
-* `qa/` — QA and verification context
-* `implementation/` — implementation-ready context
-
-Handoff artifacts should reference their source analysis, decisions, requirements, and other relevant artifacts rather than silently reproducing unsupported conclusions.
-
----
-
+Do not prepend `docs/` to these paths inside this repository.
 ## Artifact Traceability
 
 Documentation artifacts should be traceable across the documentation lifecycle.
