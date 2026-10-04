@@ -576,7 +576,21 @@ Decision artifact tidak otomatis mengubah downstream artifact; artifact terdampa
 
 ---
 
-# 19. Open Question Contract
+# 19. Open Question & Conflict Convention
+
+Open Question and Conflict artifact structure, storage, lifecycle, escalation, resolution authority, historical preservation, blocking behavior, and traceability are governed by:
+
+**Open Question & Conflict Convention**
+
+See:
+
+`OPEN-QUESTION-CONFLICT-CONVENTION-v1.md`
+
+The convention defines `ART-xxx` artifact identity with `OQ-xxx` / `CON-xxx` domain records. AI may identify and document unresolved matters, but may not silently resolve them.
+
+---
+
+# 20. Legacy Open Question Contract
 
 Open Question menggunakan:
 
@@ -611,7 +625,7 @@ AI tidak boleh menjawab sendiri jika evidence tidak cukup.
 
 ---
 
-# 20. Conflict Contract
+# 21. Legacy Conflict Contract
 
 Conflict menggunakan:
 
@@ -647,7 +661,7 @@ Conflict tidak boleh diselesaikan melalui silent assumption.
 
 ---
 
-# 21. Universal Output Rules
+# 22. Universal Output Rules
 
 Semua AI output harus:
 
