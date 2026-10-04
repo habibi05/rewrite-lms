@@ -228,7 +228,7 @@ Definisikan apakah role ini:
 - Menyelesaikan findings
 - Menyediakan evidence untuk resolution
 
-Seluruh review findings WAJIB mengikuti Review Finding Lifecycle yang ditetapkan oleh Master Contract v1.
+Seluruh review findings WAJIB mengikuti Review Finding Lifecycle yang ditetapkan oleh Master Contract v1 dan struktur Review Artifact WAJIB mengikuti `REVIEW-ARTIFACT-CONVENTION-v1.md`.
 
 Review findings WAJIB menggunakan:
 
