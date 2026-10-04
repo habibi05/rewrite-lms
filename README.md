@@ -8,6 +8,7 @@ The documentation system is governed by:
 * `ARTIFACT-METADATA-CONVENTION-v1.md`
 * `HANDOFF-MANIFEST-CONVENTION-v1.md`
 * `REVIEW-ARTIFACT-CONVENTION-v1.md`
+* `HUMAN-DECISION-CONVENTION-v1.md`
 * `LMS-REWRITE-DOCUMENTATION-WORKFLOW.md`
 
 Those documents define the authoritative rules for evidence handling, classification, stable identifiers, document status, review, decisions, traceability, and artifact handoff.
@@ -63,6 +64,9 @@ The GitHub repository root (`./`) is the canonical root for all Rewrite LMS docu
 ├── prd/
 │   └── <feature>.md
 │
+├── decisions/
+│   └── <decision-name>.md
+│
 ├── reviews/
 │   ├── cross-feature-review.md
 │   └── final-review.md
@@ -83,6 +87,7 @@ All workflow and role-specific contracts use paths relative to this repository r
 * `prd/*.md`
 * `database.md`
 * `reviews/*.md`
+* `decisions/*.md`
 
 Do not prepend `docs/` to these paths inside this repository.
 ## Artifact Traceability
