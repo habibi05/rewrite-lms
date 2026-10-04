@@ -27,6 +27,13 @@ The index should not contain detailed findings or duplicate artifact content.
 
 ## Artifact Registry
 
+### Governance Artifacts
+
+| Artifact ID | Title | Type | Status | Location | Related / Depends On |
+| ----------- | ----- | ---- | ------ | -------- | -------------------- |
+| — | HUMAN-DECISION-CONVENTION-v1 | CONVENTION | APPROVED | HUMAN-DECISION-CONVENTION-v1.md | ARTIFACT-METADATA-CONVENTION |
+
+
 | Artifact ID | Title | Type | Status | Location | Related / Depends On |
 | ----------- | ----- | ---- | ------ | -------- | -------------------- |
 | —           | —     | —    | —      | —        | —                    |
