@@ -408,25 +408,15 @@ Behavior legacy tidak otomatis menjadi requirement sistem baru.
 
 # 10. ID Convention
 
-Semua artifact menggunakan stable IDs.
+Stable artifact identity, domain-specific IDs, and their governing rules are defined by:
 
-| Prefix    | Meaning                                |
-| --------- | -------------------------------------- |
-| `ES-xxx`  | Existing System Finding                |
-| `FM-xxx`  | Feature Mapping Entry                  |
-| `BR-xxx`  | Business Rule                          |
-| `FR-xxx`  | Functional Requirement                 |
-| `NFR-xxx` | Non-Functional Requirement             |
-| `UC-xxx`  | Use Case / User Flow                   |
-| `AC-xxx`  | Acceptance Criteria                    |
-| `EC-xxx`  | Edge Case                              |
-| `DEP-xxx` | Dependency                             |
-| `OQ-xxx`  | Open Question                          |
-| `CON-xxx` | Conflict                               |
-| `REV-xxx` | Review Finding                         |
-| `DB-xxx`  | Database Requirement / Entity Decision |
-| `HD-xxx`  | Human Decision                         |
+**Artifact & Metadata Convention**
 
+See:
+
+`ARTIFACT-METADATA-CONVENTION-v1.md`
+
+The Master Contract remains authoritative for documentation governance; the convention provides the canonical artifact identity and metadata model.
 ---
 
 # 11. ID Stability
@@ -497,30 +487,15 @@ Dokumen telah digantikan oleh versi yang lebih baru.
 
 # 13. Document Metadata
 
-Setiap official document harus memiliki metadata.
+Metadata structure, required fields, artifact identity, lifecycle status, ownership, versioning, and supersession rules are governed by:
 
-Example:
+**Artifact & Metadata Convention**
 
-```yaml
----
-document: business-rules
-version: 1.0
-status: DRAFT
----
-```
+See:
 
-Untuk feature-specific document:
+`ARTIFACT-METADATA-CONVENTION-v1.md`
 
-```yaml
----
-document: prd
-feature: course-progress
-version: 1.0
-status: DRAFT
----
-```
-
----
+Every official document MUST comply with that convention.
 
 # 14. Review Severity
 
