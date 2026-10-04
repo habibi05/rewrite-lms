@@ -848,10 +848,12 @@ Gate dapat menjadi `READY_FOR_APPROVAL` hanya jika:
 
 # 12. Final Documentation Structure
 
-Setelah seluruh tahap selesai:
+Setelah seluruh tahap selesai, struktur canonical repository adalah relative terhadap repository root (./).
+
+> Catatan: repository `rewrite-lms` ditempatkan di dalam folder `docs/` milik legacy project. Karena itu, `docs/` adalah konteks filesystem legacy, bukan subdirectory di dalam repository ini.
 
 ```text
-docs/
+./
 │
 ├── analysis/
 │   └── existing-system.md
