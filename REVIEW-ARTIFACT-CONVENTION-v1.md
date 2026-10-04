@@ -115,7 +115,7 @@ target:
   version: 1.2
 ```
 
-`suppersedes_review` menunjuk ke Review Artifact sebelumnya, bukan target artifact.
+`supersedes_review` menunjuk ke Review Artifact sebelumnya, bukan target artifact.
 
 ## 11. Review Result
 
