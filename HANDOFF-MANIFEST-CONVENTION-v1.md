@@ -328,7 +328,7 @@ completion:
 
 Completion berarti kewajiban handoff telah dipenuhi.
 
-``completion` != `approval``.
+`completion` != `approval`.
 
 Approval tetap mengikuti human approval gate dan Artifact & Metadata Convention.
 
