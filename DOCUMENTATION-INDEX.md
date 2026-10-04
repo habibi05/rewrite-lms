@@ -31,14 +31,28 @@ The index should not contain detailed findings or duplicate artifact content.
 
 | Artifact ID | Title | Type | Status | Location | Related / Depends On |
 | ----------- | ----- | ---- | ------ | -------- | -------------------- |
+| — | AI-DOCUMENTATION-PROMPT-CONTRACT-v1 | MASTER-CONTRACT | DRAFT | AI-DOCUMENTATION-PROMPT-CONTRACT-v1.md | — |
+| — | ARTIFACT-METADATA-CONVENTION-v1 | CONVENTION | APPROVED | ARTIFACT-METADATA-CONVENTION-v1.md | MASTER-CONTRACT |
+| — | HANDOFF-MANIFEST-CONVENTION-v1 | CONVENTION | APPROVED | HANDOFF-MANIFEST-CONVENTION-v1.md | ARTIFACT-METADATA-CONVENTION |
+| — | REVIEW-ARTIFACT-CONVENTION-v1 | CONVENTION | APPROVED | REVIEW-ARTIFACT-CONVENTION-v1.md | ARTIFACT-METADATA-CONVENTION |
 | — | HUMAN-DECISION-CONVENTION-v1 | CONVENTION | APPROVED | HUMAN-DECISION-CONVENTION-v1.md | ARTIFACT-METADATA-CONVENTION |
 | — | OPEN-QUESTION-CONFLICT-CONVENTION-v1 | CONVENTION | APPROVED | OPEN-QUESTION-CONFLICT-CONVENTION-v1.md | ARTIFACT-METADATA-CONVENTION, HUMAN-DECISION-CONVENTION |
 | — | REQUIREMENT-BASELINE-CONVENTION-v1 | CONVENTION | APPROVED | REQUIREMENT-BASELINE-CONVENTION-v1.md | ARTIFACT-METADATA-CONVENTION, HUMAN-DECISION-CONVENTION, REVIEW-ARTIFACT-CONVENTION, OPEN-QUESTION-CONFLICT-CONVENTION |
 
+### Workflow & Templates
 
 | Artifact ID | Title | Type | Status | Location | Related / Depends On |
 | ----------- | ----- | ---- | ------ | -------- | -------------------- |
-| —           | —     | —    | —      | —        | —                    |
+| — | LMS-REWRITE-DOCUMENTATION-WORKFLOW | WORKFLOW | DRAFT | LMS-REWRITE-DOCUMENTATION-WORKFLOW.md | MASTER-CONTRACT, applicable conventions |
+| — | ROLE-SPECIFIC-CONTRACT-TEMPLATE | TEMPLATE | DRAFT | ROLE-SPECIFIC-CONTRACT-TEMPLATE.md | MASTER-CONTRACT, WORKFLOW, applicable conventions |
+
+### Active Operational Artifacts
+
+No operational artifacts have been created yet.
+
+This section will be populated as reverse engineering and downstream documentation begin.
+
+Do not pre-register planned artifacts as existing artifacts.
 
 ---
 
@@ -59,7 +73,13 @@ The following artifact categories are used by this documentation structure.
 | `USER-FLOW`           | Documented user/system flow                                  |
 | `BUSINESS-RULE`       | Documented business rule                                     |
 | `ACCEPTANCE-CRITERIA` | Testable acceptance criteria                                 |
-| `HANDOFF`             | Curated downstream handoff artifact                          |
+| `HANDOFF`             | Curated downstream handoff artifact                        |
+| `MASTER-CONTRACT`     | Highest-level documentation governance contract          |
+| `CONVENTION`          | Governing structural or semantic convention              |
+| `WORKFLOW`            | Documentation process and sequencing rules               |
+| `ROLE-CONTRACT`       | Role-specific operating contract                         |
+| `TEMPLATE`            | Reusable artifact/document template                      |
+| `INDEX`               | Documentation catalog and navigation index               |                          |
 
 Additional artifact types may be introduced when required by the workflow.
 
@@ -111,37 +131,38 @@ An artifact may have multiple upstream or downstream relationships.
 
 ## Current Documentation Map
 
-### Source
+### Governance
+Registered above under **Governance Artifacts**.
 
-No registered artifacts yet.
+### Workflow & Templates
+Registered above under **Workflow & Templates**.
+
+### Source
+No operational source artifacts have been created yet.
 
 ### Analysis
-
-No registered artifacts yet.
+No operational analysis artifacts have been created yet.
 
 ### Review
-
-No registered artifacts yet.
+No operational review artifacts have been created yet.
 
 ### Decisions
-
-No registered project decision artifacts yet.
+No project decision artifacts have been created yet.
 
 ### Open Questions
-
-No registered Open Question artifacts yet.
+No Open Question artifacts have been created yet.
 
 ### Conflicts
+No Conflict artifacts have been created yet.
 
-No registered Conflict artifacts yet.
+### Requirements
+No requirement baseline artifacts have been created yet.
 
 ### PRD
-
-No registered artifacts yet.
+No PRD artifacts have been created yet.
 
 ### Handoff
-
-No registered artifacts yet.
+No handoff manifests have been created yet.
 
 ---
 
