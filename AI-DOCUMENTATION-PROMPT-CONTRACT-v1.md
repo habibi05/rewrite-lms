@@ -590,78 +590,33 @@ The convention defines `ART-xxx` artifact identity with `OQ-xxx` / `CON-xxx` dom
 
 ---
 
-# 20. Legacy Open Question Contract
+# 20. Requirement Baseline Convention
 
-Open Question menggunakan:
+Requirement candidate, baseline entry criteria, resolution flow, change control, blocking behavior, and the boundary between requirement authority and workflow resolution are governed by:
 
-```text
-OQ-xxx
-```
+**Requirement Baseline Convention**
 
-Format:
+See:
 
-```markdown
-### OQ-014 — Progress Reset on Re-enrollment
+`REQUIREMENT-BASELINE-CONVENTION-v1.md`
 
-**Question**
-Should course progress be reset when a user enrolls again?
+Core rule:
 
-**Why It Matters**
-This affects progress lifecycle and completion status.
+> Workflow boleh menemukan, mengklarifikasi, menguji, dan mengusulkan perubahan requirement. Workflow tidak boleh diam-diam mengubah requirement baseline.
 
-**Affected Documents**
-- business-rules.md
-- prd/course-progress.md
-- database.md
+Legacy behavior is evidence about the old system, not an automatic requirement for the new system. Model inference is not an authoritative requirement source.
 
-**Source**
-UNKNOWN
+A requirement may be treated as baseline only after the convention's source, traceability, review, ambiguity/conflict, human decision, and lifecycle criteria are satisfied.
 
-**Status**
-OPEN
-```
+Requirement IDs remain governed by the Artifact & Metadata Convention. Baseline requirements may use FR-xxx, NFR-xxx, or another applicable requirement domain ID.
 
-AI tidak boleh menjawab sendiri jika evidence tidak cukup.
+Unresolved material OQ-xxx, CON-xxx, required human decisions, or required reviews block downstream use of the affected requirement. Review completion does not itself equal human approval.
+
+Changes to a requirement baseline must use controlled revision and preserve stable identity/history according to the applicable conventions.
 
 ---
 
-# 21. Legacy Conflict Contract
-
-Conflict menggunakan:
-
-```text
-CON-xxx
-```
-
-Format:
-
-```markdown
-### CON-001
-
-**Severity:** CRITICAL
-
-**Documents**
-- business-rules.md
-- prd/course-progress.md
-
-**Conflict**
-...
-
-**Evidence A**
-...
-
-**Evidence B**
-...
-
-**Required Human Decision**
-...
-```
-
-Conflict tidak boleh diselesaikan melalui silent assumption.
-
----
-
-# 22. Universal Output Rules
+# 21. Universal Output Rules
 
 Semua AI output harus:
 
