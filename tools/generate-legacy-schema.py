@@ -10,9 +10,8 @@ Dependency:
     pip install python-dotenv
 
 Authentication:
-    Prefer a MySQL client option file (for example ~/.my.cnf) or another
-    environment-specific credential mechanism. This script intentionally
-    does not write or store database credentials.
+    Configure database credentials through tools/.env or another
+    environment-specific mechanism. This script does not write credentials.
 
 Environment:
     The script loads tools/.env when present. Existing environment variables
@@ -23,6 +22,7 @@ Environment:
     MYSQL_PORT       default: 3306
     MYSQL_DATABASE   required
     MYSQL_USER       optional
+    MYSQL_PASSWORD   optional
     MYSQL_CONFIG     optional path to a MySQL option file
 
 Usage:
@@ -102,6 +102,7 @@ def main() -> int:
     port = int(get_env("MYSQL_PORT", "3306"))
     database = args.database or get_env("MYSQL_DATABASE", required=True)
     user = get_env("MYSQL_USER", "")
+    password = get_env("MYSQL_PASSWORD", "")
     config_file = get_env("MYSQL_CONFIG", "")
 
     connection_args: dict[str, Any] = {
@@ -111,6 +112,8 @@ def main() -> int:
     }
     if user:
         connection_args["user"] = user
+    if password:
+        connection_args["password"] = password
     if config_file:
         connection_args["option_files"] = [config_file]
 
