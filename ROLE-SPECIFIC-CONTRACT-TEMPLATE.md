@@ -22,8 +22,9 @@ Role ini WAJIB beroperasi dalam batasan yang ditetapkan oleh:
 2. Documentation Workflow
 3. Artifact & Metadata Convention
 4. Human Decision Convention
-5. Folder Structure
-5. Role-Specific Contract ini
+5. Open Question & Conflict Convention
+6. Folder Structure
+7. Role-Specific Contract ini
 
 Contract ini TIDAK BOLEH menggantikan, mengubah, atau mendefinisikan ulang contract pada tingkat yang lebih tinggi.
 
@@ -232,6 +233,8 @@ Definisikan apakah role ini:
 Seluruh review findings WAJIB mengikuti Review Finding Lifecycle yang ditetapkan oleh Master Contract v1 dan struktur Review Artifact WAJIB mengikuti `REVIEW-ARTIFACT-CONVENTION-v1.md`.
 
 Human Decision artifact WAJIB mengikuti `HUMAN-DECISION-CONVENTION-v1.md` dan menggunakan canonical ART-xxx. Role tidak boleh menggunakan HD-xxx sebagai identity canonical.
+
+Open Question dan Conflict artifact WAJIB mengikuti `OPEN-QUESTION-CONFLICT-CONVENTION-v1.md`, termasuk canonical storage, `ART-xxx` artifact identity, `OQ-xxx` / `CON-xxx` records, escalation, resolution linkage, blocking behavior, dan historical preservation.
 
 Review findings WAJIB menggunakan:
 
