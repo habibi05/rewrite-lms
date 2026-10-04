@@ -6,6 +6,7 @@ The documentation system is governed by:
 
 * `AI-DOCUMENTATION-PROMPT-CONTRACT-v1.md`
 * `ARTIFACT-METADATA-CONVENTION-v1.md`
+* `HANDOFF-MANIFEST-CONVENTION-v1.md`
 * `LMS-REWRITE-DOCUMENTATION-WORKFLOW.md`
 
 Those documents define the authoritative rules for evidence handling, classification, stable identifiers, document status, review, decisions, traceability, and artifact handoff.
