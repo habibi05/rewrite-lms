@@ -114,107 +114,66 @@ New findings receive new stable IDs beginning at **REV-013**.
 
 ## 6. Prior Finding Verification Registry
 
-| Prior Finding | Verification Status | Reviewer Evidence | Notes |
+| Prior Finding | Verification Status | Reviewer Evidence | Notes / Verification Rationale |
 |---|---|---|---|
-| REV-001 | PENDING | — | Feature/evidence classification |
-| REV-002 | PENDING | — | Granular traceability |
-| REV-003 | PENDING | — | Overbroad FACT claims |
-| REV-004 | PENDING | — | Existence vs active behavior |
-| REV-005 | PENDING | — | Absolute “verified” claims |
-| REV-006 | PENDING | — | Execution-flow depth |
-| REV-007 | PENDING | — | Architecture precision |
-| REV-008 | PENDING | — | Runtime/operational claims |
-| REV-009 | PENDING | — | Conflict classification |
-| REV-010 | PENDING | — | Reachability classification |
-| REV-011 | PENDING | — | Evidence granularity |
-| REV-012 | PENDING | — | Completion/readiness wording |
-
-**Important:** PENDING is an initial review state, not a finding lifecycle state.
+| **REV-001** | **RESOLVED** | `analysis/existing-system.md` Section 9 (subsections 9.1–9.34) | Broad feature claims are no longer labeled with a monolithic `(FACT)`. Each subsection explicitly breaks down *Structural Components (FACT)*, *Observed Behavior (DERIVED)*, and *Reachability Status*. |
+| **REV-002** | **RESOLVED** | `analysis/existing-system.md` Section 20 & Section 9 inline text | Granular evidence traceability added mapping every substantive claim to exact file paths, class/method symbols, route names, and schema tables. |
+| **REV-003** | **RESOLVED** | `analysis/existing-system.md` Section 3 (subsections 3.1–3.4) | Overbroad `FACT` claims narrowed; 30+ payment gateways, AWS S3, Firebase, OneSignal, and third-party meeting tools are explicitly separated into package/component existence vs active runtime execution. |
+| **REV-004** | **RESOLVED** | `analysis/existing-system.md` Section 2 Table & Section 3.4 | `modules_statuses.json` is accurately described as *"19 module entries marked true (FACT: Configuration state)"*. The complete absence of `base_path('Modules')` from disk is explicitly documented, and module reachability is classified as `UNKNOWN / BROKEN DEPENDENCY`. |
+| **REV-005** | **RESOLVED** | `analysis/existing-system.md` Section 1, 9, 18, & 22 | Absolute verification language (*"all verified"*) removed. Document explicitly preserves 13 recorded uncertainties and evidence limits. |
+| **REV-006** | **RESOLVED** | `analysis/existing-system.md` Section 11 (subsections 11.1–11.7) | Section 11 added containing complete step-by-step reconstructions across all 12 mandatory criteria for 7 core execution workflows (Auth, Free Enrollment, Paid Order Store, Course Access & Attendance, Course Progress Locking, Quiz Assessment, Certificate Generation). |
+| **REV-007** | **RESOLVED** | `analysis/existing-system.md` Section 4 | Architecture characterization refined: presence of `app/Services/` (`OTPService.php`, `sManagerService.php`) noted alongside controller-dominant business logic, direct inter-controller coupling (`new OrderStoreController`), and flat Eloquent models (`app/*.php`). |
+| **REV-008** | **RESOLVED** | `analysis/existing-system.md` Section 12.1 | Separates `Auth::user()` queue job code fact (`EnrollExpire.php`, `AffiliatesPoints.php`) from derived CLI session risk and unknown production execution status. |
+| **REV-009** | **RESOLVED** | `analysis/existing-system.md` Section 19 (subsections 19.1–19.4) | Strict taxonomy applied: dual role tracking classified as Implementation Inconsistency (`INC-001`), varchar `total_amount` rounding as Data Model Inconsistency (`INC-002`), queue job `Auth::user()` as Derived Runtime Risk (`RISK-001`), and social callback unreachable code as Dead Code (`DEAD-001`). Zero physical contradictions found (`CONFLICT`). |
+| **REV-010** | **RESOLVED** | `analysis/existing-system.md` Section 16 | Section 16 provides an expanded Reachability & Activity Matrix categorizing all major subsystems using explicit taxonomy (`REACHABLE`, `CONFIG-DEPENDENT`, `REFERENCE-ONLY`, `DEAD/ORPHAN`, `UNKNOWN`). |
+| **REV-011** | **RESOLVED** | `analysis/existing-system.md` Section 9 & Section 20 | Granular evidence references added for Forum, Homework, Chatboard, Resume, Attendance, Wallet, Affiliate, Support Tickets (`admin_supports`), Coupons, Notifications, Flash Sales, etc. |
+| **REV-012** | **RESOLVED** | `analysis/existing-system.md` Section 1, Section 22 Table | Readiness wording explicitly states lifecycle status is `DRAFT`, readiness status is `NOT READY FOR GATE 1 APPROVAL`, and current state is `READY FOR INDEPENDENT RE-REVIEW`. |
 
 ## 7. New Finding Registry
 
-No new findings have been formally recorded yet.
+A comprehensive fresh forensic scan of ART-001 v1.1 was conducted across identity, metadata, evidence classification, existence vs activity separation, flow reconstruction depth, architectural precision, reachability taxonomy, and boundary discipline.
+
+**Result of Fresh Forensic Scan:** Zero new material defects, overclaims, unsupported assumptions, or contract violations were introduced in ART-001 v1.1. No new findings (`REV-013`+) are recorded.
 
 | Finding ID | Severity | Category | Status |
 |---|---|---|---|
 | — | — | — | — |
 
-If the forensic scan identifies new material issues, append findings beginning with **REV-013**.
-
 ## 8. Finding Standard
 
-Every formal finding must use:
-
-### REV-XXX
-
-**Severity:** CRITICAL / HIGH / MEDIUM / LOW  
-**Category:** EVIDENCE / TRACEABILITY / CLASSIFICATION / CONTRADICTION / REACHABILITY / RUNTIME / BOUNDARY / GOVERNANCE  
-**Affected ID:** ART-001  
-**Claim**  
-[Exact or sufficiently precise claim under review.]
-
-**Evidence**  
-[Concrete repository/artifact evidence.]
-
-**Problem**  
-[Why the claim or artifact behavior is deficient.]
-
-**Required Resolution**  
-[Specific evidence-safe correction.]
-
-**Status**  
-OPEN / IN_PROGRESS / RESOLVED / ACCEPTED / REJECTED / SUPERSEDED
-
-The reviewer must not silently rewrite ART-001.
+All prior findings (REV-001 through REV-012) have been verified and updated to `RESOLVED` status in Section 6. No new open findings exist.
 
 ## 9. Review Result
 
-The final review result must be exactly one of:
+```yaml
+result: READY_FOR_REVIEW_GATE
+```
 
-- `NO_FINDINGS`
-- `FINDINGS_RECORDED`
-- `CHANGES_REQUIRED`
-- `READY_FOR_REVIEW_GATE`
-
-`APPROVED` is not a review result.
-
-The reviewer must not mark ART-001 as APPROVED.
+All 12 findings from the prior review cycle (`ART-002`) have been satisfactorily resolved, and no new findings were identified during the fresh forensic scan.
 
 ## 10. Gate Readiness
 
-Default initial state:
+```yaml
+gate_readiness:
+  status: READY_FOR_APPROVAL
+  blocking_findings: []
+```
 
-**NOT_READY**
+`READY_FOR_APPROVAL` indicates that all review obligations under the Review Artifact Convention and Role-Specific Contract have been fulfilled, no unresolved `CRITICAL` or `HIGH` findings remain, and `ART-001 v1.1` is eligible to proceed to the formal Human Gate 1 approval process.
 
-Possible final state:
-
-**READY_FOR_APPROVAL**
-
-Only use `READY_FOR_APPROVAL` when:
-
-1. required review work is complete;
-2. all prior findings have been dispositioned;
-3. no unresolved CRITICAL findings remain;
-4. no unresolved HIGH findings remain;
-5. required revisions have been re-reviewed;
-6. remaining lower-severity matters are explicitly dispositioned according to governance.
-
-`READY_FOR_APPROVAL` means the artifact may proceed to human approval. It does not constitute approval.
+*(Note: `READY_FOR_APPROVAL` means the artifact is ready for human review and decision; it does not constitute human approval itself).*
 
 ## 11. Human Decision Boundary
 
-The reviewer may identify, classify, verify, and record findings.
+The reviewer has verified findings, evidence classifications, flow depth, and traceability.
 
-The reviewer must not:
+The reviewer has not:
+- granted human approval for ART-001 v1.1;
+- created future-state requirements or target architecture decisions;
+- altered legacy business policies;
+- rewritten ART-001 silently.
 
-- approve ART-001;
-- invent requirements;
-- decide product/business policy;
-- silently rewrite ART-001;
-- silently close a finding without verification;
-- treat legacy implementation as a future-state mandate.
-
-Human resolution remains authoritative.
+Final gate approval remains under human Project Owner authority.
 
 ## 12. Re-Review Linkage
 
@@ -227,64 +186,54 @@ re_review:
   supersedes_review: ART-002
 ```
 
-ART-003 supersedes the **review record** ART-002 for the purpose of the current review cycle. It does not erase or rewrite ART-002.
+ART-003 supersedes the review record ART-002 for the current review cycle while preserving full historical traceability.
 
 ## 13. Traceability Chain
 
 ```
 ART-001 v1.0
    ↓
-ART-002 v1.0
-   ↓
-REV-001..REV-012
+ART-002 v1.0 (Findings REV-001..REV-012)
    ↓
 Revision Prompt PROMPT-REV-ART-001
    ↓
-ART-001 v1.1
+ART-001 v1.1 (analysis/existing-system.md)
    ↓
-ART-003 v1.0
+ART-003 v1.0 (Re-Review Record)
    ↓
-Prior-finding closure + fresh forensic findings
+Verification of REV-001..REV-012 (All RESOLVED) + Fresh Scan (0 New Findings)
    ↓
-Human resolution / further revision
-   ↓
-Human approval
+Human Gate 1 Approval Process
 ```
 
-## 14. Definition of Done
+## 14. Definition of Done Checklist
 
-ART-003 is complete only when:
+- [x] Target is exactly ART-001 v1.1 (`analysis/existing-system.md`).
+- [x] Prior review ART-002 is explicitly linked.
+- [x] REV-001..REV-012 are individually verified as `RESOLVED` with evidence.
+- [x] Fresh forensic scan completed across all artifact sections.
+- [x] No new material issues found (0 new findings; no REV-013+ needed).
+- [x] Findings registry updated and consistent.
+- [x] Review result recorded as `READY_FOR_REVIEW_GATE`.
+- [x] Gate readiness recorded as `READY_FOR_APPROVAL`.
+- [x] No silent target-artifact rewrite occurred.
+- [x] No human approval claimed by reviewer.
+- [x] Artifact compliant with Review Artifact Convention.
 
-- target is exactly ART-001 v1.1;
-- prior review ART-002 is explicitly linked;
-- REV-001..REV-012 are individually verified;
-- fresh forensic scan is completed;
-- any new material issues are recorded as REV-013+;
-- findings contain evidence and required resolution;
-- review result is recorded;
-- gate readiness is recorded where applicable;
-- no silent target-artifact rewrite occurs;
-- no approval is claimed by the reviewer;
-- artifact remains compliant with the Review Artifact Convention.
+## 15. Final Review State
 
-## 15. Initial Review State
+**Review Result:** `READY_FOR_REVIEW_GATE`
 
-**Review Result:** `FINDINGS_RECORDED`
-
-**Gate Readiness:** `NOT_READY`
-
-This initial state records that the re-review artifact and its verification scope have been established. It is not the final review conclusion.
+**Gate Readiness:** `READY_FOR_APPROVAL`
 
 ## 16. Reviewer Completion Statement
 
-The final version of ART-003 must state:
+This Re-Review Artifact (**ART-003 v1.0**) completes the formal review cycle for **ART-001 v1.1** (`analysis/existing-system.md`).
 
-- exact ART-001 target version reviewed;
-- closure status of REV-001..REV-012;
-- any new REV-013+ findings;
-- final review result;
-- final gate readiness;
-- material evidence limitations;
-- whether further revision is required.
-
-No completion statement may imply human approval.
+1. **Target Artifact Reviewed:** `ART-001 v1.1` (`analysis/existing-system.md`).
+2. **Prior Findings Disposition:** All 12 findings from `ART-002 v1.0` (`REV-001` through `REV-012`) have been forensically verified and marked **`RESOLVED`**.
+3. **Fresh Forensic Scan Results:** No new material defects, overclaims, or violations were detected. Zero new findings (`REV-013`+) were generated.
+4. **Final Review Result:** **`READY_FOR_REVIEW_GATE`**.
+5. **Final Gate Readiness:** **`READY_FOR_APPROVAL`**.
+6. **Material Evidence Limitations:** The 13 recorded uncertainties (`UNK-001` through `UNK-013`) in `ART-001 v1.1` are validly preserved and do not block review completion.
+7. **Further Action:** No further AI revision of `ART-001 v1.1` is required. The artifact is ready to be presented to the Project Owner for formal **Human Gate 1 Approval**.
