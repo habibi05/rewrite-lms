@@ -19,7 +19,7 @@ owner: PROJECT_OWNER
 | Target Version | 1.1 |
 | Target Path | `analysis/existing-system.md` |
 | Prior Review | ART-002 v1.0 |
-| Review Baseline Commit | `dbd704b583483b88f1b0a6bd5acf9ef702eb4e62` |
+| Review Baseline Commit | `ac9358ac1bc401ea48d877d4e82f3106aa790a3d` |
 | Status | DRAFT |
 
 ## 2. Review Objective
@@ -119,7 +119,7 @@ New findings receive new stable IDs beginning at **REV-013**.
 | **REV-001** | **RESOLVED** | `analysis/existing-system.md` Section 9 (subsections 9.1–9.34) | Broad feature claims are no longer labeled with a monolithic `(FACT)`. Each subsection explicitly breaks down *Structural Components (FACT)*, *Observed Behavior (DERIVED)*, and *Reachability Status*. |
 | **REV-002** | **RESOLVED** | `analysis/existing-system.md` Section 20 & Section 9 inline text | Granular evidence traceability added mapping every substantive claim to exact file paths, class/method symbols, route names, and schema tables. |
 | **REV-003** | **RESOLVED** | `analysis/existing-system.md` Section 3 (subsections 3.1–3.4) | Overbroad `FACT` claims narrowed; 30+ payment gateways, AWS S3, Firebase, OneSignal, and third-party meeting tools are explicitly separated into package/component existence vs active runtime execution. |
-| **REV-004** | **RESOLVED** | `analysis/existing-system.md` Section 2 Table & Section 3.4 | `modules_statuses.json` is accurately described as *"19 module entries marked true (FACT: Configuration state)"*. The complete absence of `base_path('Modules')` from disk is explicitly documented, and module reachability is classified as `UNKNOWN / BROKEN DEPENDENCY`. |
+| **REV-004** | **RESOLVED** | `analysis/existing-system.md` Section 2 Table & Section 3.4 | `modules_statuses.json` is accurately described as *"19 module entries marked true (FACT: Configuration state)"*. The complete absence of `base_path('Modules')` from disk is explicitly documented, and module reachability is classified as `UNKNOWN` with `BROKEN DEPENDENCY` recorded as a runtime qualifier. |
 | **REV-005** | **RESOLVED** | `analysis/existing-system.md` Section 1, 9, 18, & 22 | Absolute verification language (*"all verified"*) removed. Document explicitly preserves 13 recorded uncertainties and evidence limits. |
 | **REV-006** | **RESOLVED** | `analysis/existing-system.md` Section 11 (subsections 11.1–11.7) | Section 11 added containing complete step-by-step reconstructions across all 12 mandatory criteria for 7 core execution workflows (Auth, Free Enrollment, Paid Order Store, Course Access & Attendance, Course Progress Locking, Quiz Assessment, Certificate Generation). |
 | **REV-007** | **RESOLVED** | `analysis/existing-system.md` Section 4 | Architecture characterization refined: presence of `app/Services/` (`OTPService.php`, `sManagerService.php`) noted alongside controller-dominant business logic, direct inter-controller coupling (`new OrderStoreController`), and flat Eloquent models (`app/*.php`). |
@@ -133,15 +133,27 @@ New findings receive new stable IDs beginning at **REV-013**.
 
 A comprehensive fresh forensic scan of ART-001 v1.1 was conducted across identity, metadata, evidence classification, existence vs activity separation, flow reconstruction depth, architectural precision, reachability taxonomy, and boundary discipline.
 
-**Result of Fresh Forensic Scan:** Zero new material defects, overclaims, unsupported assumptions, or contract violations were introduced in ART-001 v1.1. No new findings (`REV-013`+) are recorded.
+**Independent reviewer result:** The Gemini review recorded zero new findings during its fresh scan of ART-001 v1.1.
+
+**Subsequent independent forensic re-review:** A residual taxonomy finding was identified after that review. It was assigned **REV-013** and corrected in ART-001 before this final disposition.
 
 | Finding ID | Severity | Category | Status |
 |---|---|---|---|
-| — | — | — | — |
+| **REV-013** | **MEDIUM** | **REACHABILITY / CLASSIFICATION** | **RESOLVED** |
 
 ## 8. Finding Standard
 
-All prior findings (REV-001 through REV-012) have been verified and updated to `RESOLVED` status in Section 6. No new open findings exist.
+All prior findings (REV-001 through REV-012) have been verified and updated to `RESOLVED` status in Section 6. REV-013 is separately dispositioned below and is also `RESOLVED`. No open findings remain.
+
+### 8.1 REV-013 — Reachability Taxonomy Classification
+
+- **Severity:** MEDIUM
+- **Category:** REACHABILITY / CLASSIFICATION
+- **Finding:** ART-001 v1.1 defined discrete reachability categories but several entries combined a primary category with a qualifier, such as `REACHABLE / PARTIAL RUNTIME RISK`, `UNKNOWN / BROKEN DEPENDENCY`, and `DEAD / ORPHAN`. This weakened taxonomy precision because qualifiers were encoded inside the primary reachability field.
+- **Evidence:** `analysis/existing-system.md` reachability statements and Section 16 matrix in the pre-correction review state.
+- **Required Resolution:** Keep the primary reachability value within the defined taxonomy and record runtime/configuration/dead-code conditions as separate qualifiers or explanatory notes.
+- **Resolution Evidence:** Commit `ac9358ac1bc401ea48d877d4e82f3106aa790a3d` updates ART-001 without changing substantive system facts. Examples now use `REACHABLE` + qualifier, `UNKNOWN` + runtime qualifier, or `DEAD` as the primary category.
+- **Verification:** Post-fix inspection confirmed the combined reachability forms targeted by this finding were normalized. **Status: RESOLVED.**
 
 ## 9. Review Result
 
@@ -149,7 +161,7 @@ All prior findings (REV-001 through REV-012) have been verified and updated to `
 result: READY_FOR_REVIEW_GATE
 ```
 
-All 12 findings from the prior review cycle (`ART-002`) have been satisfactorily resolved, and no new findings were identified during the fresh forensic scan.
+All 12 findings from the prior review cycle (`ART-002`) have been satisfactorily resolved. The independent Gemini fresh scan initially recorded 0 new findings; a subsequent forensic re-review identified REV-013, which was corrected and verified as resolved.
 
 ## 10. Gate Readiness
 
@@ -201,7 +213,9 @@ ART-001 v1.1 (analysis/existing-system.md)
    ↓
 ART-003 v1.0 (Re-Review Record)
    ↓
-Verification of REV-001..REV-012 (All RESOLVED) + Fresh Scan (0 New Findings)
+Gemini independent review (REV-001..REV-012 RESOLVED; 0 new findings)
+   ↓
+Forensic re-review (REV-013 identified → corrected → RESOLVED)
    ↓
 Human Gate 1 Approval Process
 ```
@@ -212,7 +226,8 @@ Human Gate 1 Approval Process
 - [x] Prior review ART-002 is explicitly linked.
 - [x] REV-001..REV-012 are individually verified as `RESOLVED` with evidence.
 - [x] Fresh forensic scan completed across all artifact sections.
-- [x] No new material issues found (0 new findings; no REV-013+ needed).
+- [x] Independent Gemini fresh scan completed with 0 new findings.
+- [x] Subsequent forensic re-review finding REV-013 recorded, corrected, and verified as `RESOLVED`.
 - [x] Findings registry updated and consistent.
 - [x] Review result recorded as `READY_FOR_REVIEW_GATE`.
 - [x] Gate readiness recorded as `READY_FOR_APPROVAL`.
@@ -232,8 +247,9 @@ This Re-Review Artifact (**ART-003 v1.0**) completes the formal review cycle for
 
 1. **Target Artifact Reviewed:** `ART-001 v1.1` (`analysis/existing-system.md`).
 2. **Prior Findings Disposition:** All 12 findings from `ART-002 v1.0` (`REV-001` through `REV-012`) have been forensically verified and marked **`RESOLVED`**.
-3. **Fresh Forensic Scan Results:** No new material defects, overclaims, or violations were detected. Zero new findings (`REV-013`+) were generated.
-4. **Final Review Result:** **`READY_FOR_REVIEW_GATE`**.
-5. **Final Gate Readiness:** **`READY_FOR_APPROVAL`**.
-6. **Material Evidence Limitations:** The 13 recorded uncertainties (`UNK-001` through `UNK-013`) in `ART-001 v1.1` are validly preserved and do not block review completion.
-7. **Further Action:** No further AI revision of `ART-001 v1.1` is required. The artifact is ready to be presented to the Project Owner for formal **Human Gate 1 Approval**.
+3. **Independent Reviewer Result:** Gemini recorded a fresh-scan result of zero new findings.
+4. **Subsequent Forensic Re-Review:** REV-013 was identified as a reachability taxonomy classification issue, corrected in ART-001, and verified **`RESOLVED`**.
+5. **Final Review Result:** **`READY_FOR_REVIEW_GATE`**.
+6. **Final Gate Readiness:** **`READY_FOR_APPROVAL`**.
+7. **Material Evidence Limitations:** The 13 recorded uncertainties (`UNK-001` through `UNK-013`) in `ART-001 v1.1` are validly preserved and do not block review completion.
+8. **Further Action:** No further AI revision of `ART-001 v1.1` is required for this review cycle. The artifact is ready to be presented to the Project Owner for formal **Human Gate 1 Approval**.
