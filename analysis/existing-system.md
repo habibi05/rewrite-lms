@@ -96,7 +96,7 @@ The presence of a package in `composer.json` or a class file in the repository e
 |---|---|---|---|
 | `laravel/framework ^10.34.0` | Application runtime | **FACT** (`composer.json`:41) | **REACHABLE** — Core application framework. |
 | `laravel/passport` | API OAuth2 authentication | **FACT** (`composer.json`:43) | **REACHABLE** — Configured as `api` guard in `config/auth.php:45`; consumed in `routes/api.php`. |
-| `laravel/socialite ^5.11` | Social OAuth authentication | **FACT** (`composer.json`:44) | **REACHABLE** / **PARTIAL DEAD CODE** — Providers configured in `config/services.php`; routes in `routes/web.php:73-77`. `LoginController@handleProviderCallback` contains dead code (see Section 19). |
+| `laravel/socialite ^5.11` | Social OAuth authentication | **FACT** (`composer.json`:44) | **REACHABLE** — Runtime qualifier: **PARTIAL DEAD CODE**. — Providers configured in `config/services.php`; routes in `routes/web.php:73-77`. `LoginController@handleProviderCallback` contains dead code (see Section 19). |
 | `spatie/laravel-permission ^5.5` | Role-Based Access Control | **FACT** (`composer.json`:77) | **REACHABLE** — `User` model uses `HasRoles` (`app/User.php:21`); middleware registered in `app/Http/Kernel.php:67-69`. |
 | `spatie/laravel-translatable ^6.5.5` | Model attribute translation | **FACT** (`composer.json`:79) | **REACHABLE** — Used in `Course`, `CourseChapter`, `Quiz`, `Blog` models via `$translatable` array. |
 | `spatie/laravel-activitylog ^4.7.1` | User activity audit logging | **FACT** (`composer.json`:70) | **CONFIG-DEPENDENT** — Executed conditionally in `LoginController@authenticated` if `Setting.activity_enable == 1`. |
@@ -141,7 +141,7 @@ The file `modules_statuses.json` contains 19 entries marked `true`:
 - **Configuration State: FACT.** `modules_statuses.json` marks these 19 entries enabled.
 - **Filesystem Verification: FACT.** The canonical modules directory `base_path('Modules')` specified in `config/modules.php:73` and `composer.json:129` (`"Modules\\": "Modules/"`) is **completely absent from the repository filesystem**.
 - **Source References: FACT.** Isolated controller and model references import from the `Modules\` namespace (e.g., `app/Http/Controllers/CategoryController.php` sets `namespace Modules\Ebook\Http\Controllers;`; `CourseController.php` imports `Modules\Certificate\Models\CertificateDesign;`; `OtherApiController.php` imports `Modules\Homework\Models\Homework` and `Modules\Resume\Models\...`).
-- **Runtime Loadability: DERIVED / BROKEN DEPENDENCY.** Because the module class files do not exist under `Modules/`, any execution path attempting to autoload these classes in this repository will trigger a fatal runtime error (`Class "Modules\..." not found`), unless supplied by an external artifact outside this repository. Reachability is classified as **UNKNOWN / BROKEN-DEPENDENCY**.
+- **Runtime Loadability: DERIVED / BROKEN DEPENDENCY.** Because the module class files do not exist under `Modules/`, any execution path attempting to autoload these classes in this repository will trigger a fatal runtime error (`Class "Modules\..." not found`), unless supplied by an external artifact outside this repository. Reachability is classified as **UNKNOWN**. Runtime qualifier: **BROKEN DEPENDENCY**.
 
 ### Autoloaded Helper Functions
 
@@ -472,7 +472,7 @@ To prevent overbroad claims, each module is documented with its verified structu
   - Routes: `routes/web.php:468-469` (Admin config), `routes/web.php:1074-1075` (Generate/get link); `routes/api.php:178`.
 - **Observed Behavior (DERIVED):**
   - URL referrals tracked via cookies; new registrations record referrer; points credited to wallet balance.
-- **Reachability: REACHABLE / PARTIAL RUNTIME RISK.** Cookie and link tracking are reachable; background point crediting job has an authenticated session dependency (see Section 12).
+- **Reachability: REACHABLE.** Runtime qualifier: **PARTIAL RUNTIME RISK**. Cookie and link tracking are reachable; background point crediting job has an authenticated session dependency (see Section 12).
 
 ### 9.14 Instructor Payout Management
 
@@ -492,7 +492,7 @@ To prevent overbroad claims, each module is documented with its verified structu
   - Controllers: `app/Http/Controllers/CategoryController.php` (contains `namespace Modules\Ebook\Http\Controllers;`).
   - Database Tables: `ebooks`.
   - Configuration: `"Ebook": true` in `modules_statuses.json`.
-- **Reachability: UNKNOWN / BROKEN DEPENDENCY.** Directory `Modules/Ebook` is missing; model `Modules\Ebook\Models\EbookCategory` is referenced but absent from repository.
+- **Reachability: UNKNOWN.** Runtime qualifier: **BROKEN DEPENDENCY**. Directory `Modules/Ebook` is missing; model `Modules\Ebook\Models\EbookCategory` is referenced but absent from repository.
 
 ### 9.16 Forum & Discussion Module
 
@@ -502,7 +502,7 @@ To prevent overbroad claims, each module is documented with its verified structu
   - API Routes: `routes/api.php:214-217` (`/addforumscategory`, `/listforumscategory`, `/addforums`).
   - API Controller: `app/Http/Controllers/Api/OtherApiController.php:1050-1120`.
   - Configuration: `"Forum": true` in `modules_statuses.json`.
-- **Reachability: UNKNOWN / BROKEN DEPENDENCY.** Dedicated `Modules/Forum` directory is missing; web controllers not found in `app/Http/Controllers`.
+- **Reachability: UNKNOWN.** Runtime qualifier: **BROKEN DEPENDENCY**. Dedicated `Modules/Forum` directory is missing; web controllers not found in `app/Http/Controllers`.
 
 ### 9.17 Homework Module
 
@@ -511,7 +511,7 @@ To prevent overbroad claims, each module is documented with its verified structu
   - API Routes: `routes/api.php:208-211` (`POST /homework`, `POST /submithomework`, `GET /gethomework/{id}`).
   - API Controller: `app/Http/Controllers/Api/OtherApiController.php:793-870`.
   - Configuration: `"Homework": true` in `modules_statuses.json`.
-- **Reachability: UNKNOWN / BROKEN DEPENDENCY.** `OtherApiController` imports `Modules\Homework\Models\Homework`. Because `Modules/` does not exist on disk, invoking this API fails at runtime with class not found.
+- **Reachability: UNKNOWN.** Runtime qualifier: **BROKEN DEPENDENCY**. `OtherApiController` imports `Modules\Homework\Models\Homework`. Because `Modules/` does not exist on disk, invoking this API fails at runtime with class not found.
 
 ### 9.18 Chatboard Module
 
@@ -520,7 +520,7 @@ To prevent overbroad claims, each module is documented with its verified structu
   - Setting Columns: `setting.chat_bubble`.
   - Controller: `app/Http/Controllers/ChatgptController.php` (AI chat integration).
   - Configuration: `"Chatboard": true` in `modules_statuses.json`.
-- **Reachability: UNKNOWN / BROKEN DEPENDENCY.** Dedicated module folder `Modules/Chatboard` is missing.
+- **Reachability: UNKNOWN.** Runtime qualifier: **BROKEN DEPENDENCY**. Dedicated module folder `Modules/Chatboard` is missing.
 
 ### 9.19 Resume / Job Portal Module
 
@@ -530,7 +530,7 @@ To prevent overbroad claims, each module is documented with its verified structu
   - Controllers: `app/Http/Controllers/JobcategoryController.php`, `app/Http/Controllers/Api/OtherApiController.php:910-1040`.
   - API Routes: `routes/api.php:183-186, 499` (`/create/resumes`, `/resume/download/{user_id}`).
   - Configuration: `"Resume": true` in `modules_statuses.json`.
-- **Reachability: UNKNOWN / BROKEN DEPENDENCY.** Schema and API routes exist; however, `OtherApiController` imports `Modules\Resume\Models\...`, which fails on execution due to missing `Modules/` directory.
+- **Reachability: UNKNOWN.** Runtime qualifier: **BROKEN DEPENDENCY**. Schema and API routes exist; however, `OtherApiController` imports `Modules\Resume\Models\...`, which fails on execution due to missing `Modules/` directory.
 
 ### 9.20 Subscriptions & Instructor Plans
 
@@ -539,7 +539,7 @@ To prevent overbroad claims, each module is documented with its verified structu
   - Controllers: `app/Http/Controllers/StripeController.php`, `app/Http/Controllers/SubscribedOrdersController.php`.
   - Database Tables: `plan_subscribes`, `instructor_plans`.
   - Routes: `routes/web.php:436` (`orders/subscription`).
-- **Reachability: REACHABLE / CONFIG-DEPENDENT.**
+- **Reachability: REACHABLE.** Configuration qualifier: **CONFIG-DEPENDENT**.
 
 ### 9.21 Additional Utility Features (Granular Traceability)
 
@@ -860,11 +860,11 @@ To avoid conflating existence with active runtime availability, the following ma
 | Core Web Routes (Courses, Auth, Cart, Checkout) | **REACHABLE** | Active route bindings in `routes/web.php`; complete controller methods and Blade templates verified. |
 | Admin Panel Subsystem | **REACHABLE** | Mapped in `routes/web.php` with `is_admin` middleware; full controller and view hierarchy. |
 | Core API Subsystem (Login, Register, Course list) | **REACHABLE** | Validated Passport guard and active controller endpoints in `routes/api.php`. |
-| 19 nwidart Modules (`modules_statuses.json`) | **UNKNOWN / BROKEN DEPENDENCY** | Entries enabled in config, but `Modules/` directory does not exist on disk. Class loading fails without external module files. |
-| Module API Endpoints (`/homework`, `/create/resumes`) | **DEAD / BROKEN DEPENDENCY** | Routes exist in `routes/api.php`, but controllers import `Modules\...` classes that are absent from filesystem. |
-| Scheduled Cron Tasks | **DEAD / INACTIVE** | `app/Console/Kernel.php:schedule()` is completely empty (**FACT**). No recurring cron tasks execute. |
+| 19 nwidart Modules (`modules_statuses.json`) | **UNKNOWN** | Entries enabled in config, but `Modules/` directory does not exist on disk. Class loading fails without external module files. |
+| Module API Endpoints (`/homework`, `/create/resumes`) | **DEAD** | Routes exist in `routes/api.php`, but controllers import `Modules\...` classes that are absent from filesystem. |
+| Scheduled Cron Tasks | **DEAD** | `app/Console/Kernel.php:schedule()` is completely empty (**FACT**). No recurring cron tasks execute. |
 | Queue Jobs (`EnrollExpire`, `AffiliatesPoints`) | **REFERENCE-ONLY / UNKNOWN DISPATCH** | Jobs defined in `app/Jobs/`, but no automated dispatch identified. Authenticated session dependency creates high runtime failure risk if queued. |
-| Social Login Callback (lines 244–251) | **DEAD / ORPHAN** | `LoginController@handleProviderCallback`: lines 244–251 are preceded by an unconditional `if/else` return block (**FACT**). |
+| Social Login Callback (lines 244–251) | **DEAD** | `LoginController@handleProviderCallback`: lines 244–251 are preceded by an unconditional `if/else` return block (**FACT**). |
 | OTP Login Workflow | **CONFIG-DEPENDENT / UNKNOWN** | Routes and `OTPService` exist; view call in `showLoginForm` is commented out; activation state unverified. |
 | Theme 1 Blade Views (`resources/views/front`) | **REACHABLE** | Active when `Setting.theme == '1'`. |
 | Theme 2 Blade Views (`resources/views/theme_2`) | **CONFIG-DEPENDENT** | Active when `Setting.theme != '1'`. |
