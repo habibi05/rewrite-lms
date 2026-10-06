@@ -1,8 +1,8 @@
----
+| Status | APPROVED |---
 document: REVIEW
 artifact_id: ART-003
 version: 1.0
-status: DRAFT
+status: APPROVED
 owner: PROJECT_OWNER
 ---
 
