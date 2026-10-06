@@ -6,13 +6,6 @@ status: APPROVED
 owner: PROJECT_OWNER
 ---
 
-document: REVIEW
-artifact_id: ART-003
-version: 1.0
-status: APPROVED
-owner: PROJECT_OWNER
----
-
 # Re-Review ART-001 v1.1 — Existing System Analysis
 
 ## 1. Review Identity
