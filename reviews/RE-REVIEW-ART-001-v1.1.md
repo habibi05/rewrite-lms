@@ -1,4 +1,11 @@
-| Status | APPROVED |---
+---
+document: REVIEW
+artifact_id: ART-003
+version: 1.0
+status: APPROVED
+owner: PROJECT_OWNER
+---
+
 document: REVIEW
 artifact_id: ART-003
 version: 1.0
@@ -20,7 +27,7 @@ owner: PROJECT_OWNER
 | Target Path | `analysis/existing-system.md` |
 | Prior Review | ART-002 v1.0 |
 | Review Baseline Commit | `ac9358ac1bc401ea48d877d4e82f3106aa790a3d` |
-| Status | DRAFT |
+| Status | APPROVED |
 
 ## 2. Review Objective
 
