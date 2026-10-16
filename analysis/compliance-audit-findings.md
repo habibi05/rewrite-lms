@@ -13,6 +13,8 @@ The forensic inventory contains **88 capabilities (CAP-001 to CAP-088)** and **1
 
 **Status:** NON-COMPLIANT — Requires remediation
 
+> **Historical status:** This is 2026-10-16 audit result. It is preserved as historical context. See reconciliation disposition at end for 2026-10-17 documentation-only updates; that disposition does not establish runtime, security, source-wide coverage, or Feature Mapping readiness.
+
 ---
 
 ## 1. Required Sections — Compliance Matrix
@@ -222,6 +224,30 @@ Compliant when:
 ---
 
 **END OF AUDIT FINDINGS**
+
+---
+
+## Reconciliation Disposition — 2026-10-17
+
+### Scope and provenance
+
+Documentation-only reconciliation applied to `legacy-forensic-feature-inventory.md`, using existing inventory citations at legacy baseline `68ce7ed725a0db21dab12e5f6e7e839b499e7554`. Documentation repository baseline was `d743cbbe50a64e86871c9ff514292097f975fc34`. No source rediscovery, runtime test, production inspection, capability/candidate expansion, commit, or push occurred.
+
+No standalone Batch 1 or Batch 2 evidence report was accessible in documentation worktree or documentation Git history. Conversation-only findings were not treated as formal evidence.
+
+### Historical findings addressed
+
+| Historical finding | Reconciliation disposition | Remaining limitation |
+|---|---|---|
+| Classification vocabulary incomplete | Material claims now separate `VERIFIED` direct static facts, `DERIVED` risks, and `UNKNOWN` runtime/integration behavior. `BROKEN`, `UNREACHABLE`, and `DEAD` are evidence-scoped, not inferred from missing evidence. | This is not item-by-item validation of all CAP records. |
+| Candidate fields incomplete | CAND-001–CAND-014 now each have observed purpose, included capabilities, actors, entry points, execution flow, data, authorization, dependencies, reachability, boundary confidence, boundary uncertainties, and evidence index. Insufficient fields state `UNKNOWN`. | Every candidate boundary remains `DERIVED` and LOW confidence. |
+| Static and runtime claims mixed | Queue, module, payment/idempotency, webhook, credential, refund, provider, OTA, and policy assertions were scoped to cited observations; unproven outcomes were downgraded. | Runtime behavior and security correctness remain unknown. |
+| Evidence citations broad/imprecise | Existing citations were retained and their limits stated; no line number or source path was invented. | Broad inherited citations still require future source validation. |
+| Coverage claims overstate audit | Inventory retains PARTIAL coverage boundary and does not use counts as proof of readiness. | Source-wide coverage was not performed. |
+
+### Current reconciliation status
+
+Historical audit score and `FAIL` result remain historical and are not recalculated. Documentation corrections address stated traceability and certainty defects only. They do not claim compliance with all original audit criteria, Feature Mapping readiness, operational correctness, or security correctness. Closure review remains required.
 
 *Auditor: Kiro AI*  
 *Date: 2026-10-16*

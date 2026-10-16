@@ -14,6 +14,21 @@
 
 No completion claim is made for source-wide capability verification, runtime behavior, or original second-pass independence.
 
+## Reconciliation Disposition — 2026-10-17
+
+**Scope:** Documentation-only reconciliation against existing cited evidence. No legacy source modification, broad source rediscovery, runtime testing, production inspection, new capability/candidate group, commit, or push occurred.
+
+**Baselines reconfirmed before reconciliation:**
+- Legacy source: `68ce7ed725a0db21dab12e5f6e7e839b499e7554`.
+- Nested documentation repository: `d743cbbe50a64e86871c9ff514292097f975fc34`.
+- Documentation worktree was clean before edits. The nested `docs/` repository remains untracked by legacy source repository.
+
+**Evidence provenance:** Existing inventory citations are the only source evidence used. No standalone Batch 1 or Batch 2 report was accessible in documentation worktree or its Git history; conversation-only findings were not incorporated as formal evidence.
+
+**Reconciled content:** Material capability evidence is bounded through existing route/controller/model/config citations and candidate evidence indexes. CAND-001 through CAND-014 now record all contract fields, including explicit `UNKNOWN` values where evidence is insufficient. Existing absolute runtime/security claims were scoped: direct code observations remain `VERIFIED`; static consequences are `DERIVED`; queue, provider, webhook, credential, payment, module deployment, and production outcomes remain `UNKNOWN` unless current citation proves otherwise.
+
+**Status remains PARTIAL.** This reconciliation does not establish Feature Mapping readiness, source-wide completeness, runtime correctness, or security correctness. A closure review must make any subsequent handoff decision.
+
 ## Completed Remediation
 
 - Confirmed repository root and exact HEAD commit.
@@ -34,16 +49,17 @@ No completion claim is made for source-wide capability verification, runtime beh
 
 ## Known Remaining Gaps
 
-1. Claims in CAP-001–CAP-088 require item-by-item source validation at `68ce7ed`, especially exact line references and classifications.
-2. Sections 5 and 12 contain inherited assertions that mix static observations, runtime predictions, and unsupported certainty. These need downgrade to `DERIVED` or `UNKNOWN` unless direct source evidence is added.
-3. CAND-001–CAND-014 do not consistently provide all contract-required fields: actors, execution flows, authorization, reachability, boundary confidence, boundary uncertainties, and evidence index.
-4. Section 13 cannot truthfully state full repository coverage until routes, handlers, models, schema, views/frontend, authorization, jobs/events/listeners/notifications, integrations/config, commands/schedule, and tests are individually audited.
-5. Runtime execution, production configuration, remote integrations, absent module behavior, and payment outcomes remain unknown without runtime evidence and missing source.
+1. Material capability records are reconciled only to existing citations; remaining inherited CAP claims, exact line ranges, and aggregate counts need item-by-item validation before elevation.
+2. Candidate contract fields are now present, but boundaries remain `DERIVED` with LOW confidence and explicit evidence limitations.
+3. Section 13 cannot truthfully state full repository coverage until routes, handlers, models, schema, views/frontend, authorization, jobs/events/listeners/notifications, integrations/config, commands/schedule, and tests are individually audited.
+4. Runtime execution, production configuration, remote integrations, absent module behavior, credential controls, queue outcome, webhook behavior, and payment/refund outcomes remain `UNKNOWN` without runtime evidence and missing source.
+5. Batch 1/Batch 2 findings remain unavailable as versioned/provenanced artifacts.
 6. `routes.json` is untracked and was not modified.
 
 ## Files Changed
 
 - `D:/laragon/www/insmart/docs/analysis/legacy-forensic-feature-inventory.md`
 - `D:/laragon/www/insmart/docs/analysis/forensic-inventory-completion-report.md`
+- `D:/laragon/www/insmart/docs/analysis/compliance-audit-findings.md`
 
 No commit or push performed.

@@ -25,7 +25,7 @@
 
 ### Known Limitations
 
-1. **Modules directory absent.** 19 modules configured but `Modules/` directory missing from repo. All module-dependent code paths = BROKEN DEPENDENCY.
+1. **Modules directory absent.** `modules_statuses.json` records 19 configured modules while `Modules/` is absent from inspected repository (`VERIFIED`). Consequences for individual module-dependent paths are `DERIVED` or `UNKNOWN` unless a cited controller/route demonstrates a missing dependency; production module deployment is `UNKNOWN`.
 2. **No automated tests.** Only scaffold `ExampleTest` files.
 3. **Zero database foreign keys.** Referential integrity is application-level only.
 4. **Task scheduler empty.** `app/Console/Kernel.php:32-36` — `schedule()` body commented out.
@@ -98,11 +98,11 @@ Monolithic Laravel 10 application with absent modular extension system (`nwidart
 
 | Job | Trigger | Purpose | Status |
 |---|---|---|---|
-| `AffiliatesPoints` | Order completion | Award affiliate points | BROKEN (uses `Auth::user()`) |
-| `EnrollExpire` | Enrollment expiry | Revoke access to expired enrollments | BROKEN (uses `Auth::user()`) |
-| `InstructorPlan` | Subscription expiry | Handle instructor plan expiration | BROKEN (uses `Auth::user()`) |
+| `AffiliatesPoints` | Order completion | Award affiliate points | VERIFIED direct `Auth::user()` use; queue result UNKNOWN |
+| `EnrollExpire` | Enrollment expiry | Revoke access to expired enrollments | VERIFIED direct `Auth::user()` use; queue result UNKNOWN |
+| `InstructorPlan` | Subscription expiry | Handle instructor plan expiration | VERIFIED direct `Auth::user()` use; queue result UNKNOWN |
 
-**Total jobs:** 3 (all BROKEN — use `Auth::user()` in queue context, will fail at runtime)
+**Total jobs:** 3 (direct `Auth::user()` use VERIFIED; queue-worker failure is DERIVED; runtime result UNKNOWN)
 
 ### Event Listeners
 
@@ -236,7 +236,7 @@ Monolithic Laravel 10 application with absent modular extension system (`nwidart
 | **Revenue Split** | `instructor_revenue` calculated based on `Setting.instructor_revenue` percentage. Stored on `Order` and `PendingPayout`. |
 | **State Transitions** | `Order.status`: 0 (pending) → 1 (completed). `Order.enroll_expire`: set from `course.enrollment_duration`. |
 | **Side Effects** | Wallet deduction if wallet payment. Coupon usage incremented. Affiliate points dispatched. Mail sent to buyer + admin. Notification sent to buyer + admin. |
-| **Risks** | `OrderStoreController` instantiated directly (not via DI). `Auth::user()` used inside queued jobs. No idempotency — duplicate orders possible on payment callback retry. No DB transaction wrapping the multi-table writes. |
+| **Risks** | `OrderStoreController` is directly instantiated. Cited jobs use `Auth::user()` (VERIFIED; runtime result UNKNOWN). No same-`transaction_id` check or transaction wrapper is documented for cited order-creation path (VERIFIED); duplicate/partial-write outcomes are DERIVED and runtime behavior UNKNOWN. |
 
 
 
@@ -252,7 +252,7 @@ Monolithic Laravel 10 application with absent modular extension system (`nwidart
 | **DB Tables** | `orders`, payment gateway config in `settings` table |
 | **Config Storage** | Gateway credentials stored in `settings` table rows, not `.env`. Retrieved via `Setting::first()`. |
 | **Special Cases** | `ManualPaymentController` — file upload proof of payment, `payment_status = 'pending'`. `BankTransferController` — offline bank transfer, `payment_status = 'pending'`. `WalletPaymentController` — deducts from user wallet balance. |
-| **Risks** | API keys stored in database. No webhook signature verification on most gateways. No payment idempotency. Gateway credentials accessible to any admin. |
+| **Risks** | Cited code retrieves gateway configuration through `Setting::first()` (VERIFIED). Gateway-wide webhook validation, idempotency, encryption, and administrator access control are UNKNOWN without focused audit. |
 
 ### CAP-009 · Coupon / Discount System
 
@@ -912,7 +912,7 @@ This section provides deep analysis of significant capabilities, distinguishing 
 
 ### CAP-007 · Checkout & Order Creation — Deep Analysis
 
-**Classification:** VERIFIED (static analysis) + DERIVED (transaction behavior)
+**Classification:** VERIFIED (cited static order-creation path) + DERIVED (partial-write and duplicate-order risk) + UNKNOWN (runtime gateway, database, and callback behavior)
 
 **Direct Evidence:**
 - File: `app/Http/Controllers/OrderStoreController.php` (518 lines, 2 methods)
@@ -928,11 +928,11 @@ This section provides deep analysis of significant capabilities, distinguishing 
 6. **Create Enrollment link** (lines 151-180) — No separate enrollment table, order serves as enrollment
 7. **Create PendingPayout** (lines 181-200) — instructor revenue split
 8. **Update coupon usage** (lines 201-210) — increment `coupon.used`
-9. **Dispatch AffiliatePoints job** (line 220) — BROKEN, uses Auth::user()
+9. **Dispatch AffiliatePoints job** (line 220) — job uses `Auth::user()` (VERIFIED static fact); queue-worker outcome is UNKNOWN and failure risk is DERIVED.
 10. **Send notification emails** (lines 221-250) — `UserEnroll`, `AdminOrder`
 11. Return success (line 518)
 
-**CRITICAL OBSERVATION — No Database Transaction:**
+**Scoped static observation — no database transaction found in cited `OrderStoreController` path:**
 ```
 Lines 101-250: Multiple DB writes WITHOUT transaction wrapper
 - Order::create()
@@ -942,14 +942,14 @@ Lines 101-250: Multiple DB writes WITHOUT transaction wrapper
 - Mail::send()
 ```
 
-**Impact of Missing Transaction:**
+**Derived risk for this path:**
 - Payment succeeds → Order created (line 101)
 - PendingPayout creation fails (line 181) → instructor not credited
-- **Result:** Money taken, enrollment created, but instructor revenue lost
-- **No rollback mechanism** — inconsistent state persists
+- Potential result: payment/order state and downstream records can diverge if a write fails.
+- Runtime rollback, gateway settlement, and persisted state are UNKNOWN.
 
 **Static Analysis Limitation:**
-Cannot verify runtime behavior if payment gateway callback fires twice (idempotency not implemented).
+No same-`transaction_id` check was recorded for this cited order-creation path. Duplicate-order risk on callback retry is DERIVED; callback retry behavior and database enforcement are UNKNOWN.
 
 **Unknown:**
 - Whether payment gateways implement callback retry logic
@@ -1027,7 +1027,7 @@ Cannot verify email delivery, cannot confirm if password is communicated to reci
 - Whether modules exist in a different repository
 - Whether production deployment includes modules not present in Git
 
-**Runtime Impact:** Any user attempting certificate, ebook, homework, or forum features → 500 error. Features are advertised/configured but completely non-functional.
+**Derived impact:** Cited controller references can require absent module classes in this repository snapshot. Exact exception behavior, route reachability, and production module availability are UNKNOWN; do not generalize this finding to every module-dependent feature.
 
 ---
 
@@ -1087,6 +1087,29 @@ if (Auth::user()->role != 'user') {
 ## 6. Candidate Feature Grouping
 
 The following inherited candidate labels preserve `CAND-001`–`CAND-014`. They are **DERIVED** groupings from prior static analysis, not product decisions. Detailed required-field evidence remains incomplete; Section 7 records this limitation.
+
+### Candidate evidence contract and scope
+
+All `CAND-001`–`CAND-014` records are **DERIVED** grouping boundaries, not product decisions or readiness findings. The Section 6 entry for each candidate supplies its observed purpose (candidate label), included capabilities, and boundary basis. The matrix below supplies every remaining contract field from existing inventory citations. `UNKNOWN` means current artifact lacks sufficient evidence; it does not mean absent.
+
+| Candidate | Actors | Entry points | Observed execution flow | Data | Authorization | Dependencies | Reachability | Boundary uncertainties | Evidence index |
+|---|---|---|---|---|---|---|---|---|---|
+| CAND-001 | User, instructor, admin, guest (DERIVED from included CAP records) | Auth/account routes and controllers (Section 3; CAP-001, CAP-002, CAP-024, CAP-045, CAP-050) | Account/authentication controller flow is DERIVED; complete flow UNKNOWN | `users`; identity/authorization references (Section 6 core-table index; CAP-002) | `IsAdmin.php:20` condition VERIFIED; route-by-route authorization UNKNOWN | Laravel auth, Passport, Spatie references (Section 2; CAP-002) | Web routes recorded; exact route coverage UNKNOWN | Role systems overlap; inherited membership remains LOW confidence | CAP-001, CAP-002, CAP-024, CAP-028, CAP-043–045, CAP-050; `IsAdmin.php:20` |
+| CAND-002 | User, instructor, admin (DERIVED) | Course/category/chapter/class records and included CAP entry points | Content authoring/catalog flow DERIVED; full flow UNKNOWN | `courses`, categories, chapters, classes (core-table index) | UNKNOWN — no focused route/middleware audit | Course/category records; module-dependent content may be absent | UNKNOWN — entry points inherited | Bundle/content and module boundaries overlap | CAP-003, CAP-004, CAP-017, CAP-023, CAP-035, CAP-057; core-table index |
+| CAND-003 | User, instructor, admin, gift recipient (DERIVED) | `web.php:844-852,881-999`; payment routes; `OrderStoreController` | Cart/payment controller invokes cited order creation (VERIFIED static path); gateway outcome UNKNOWN | `orders`, `carts`, `coupons`, `wallets`, payout tables | Checkout route authorization outside cited path UNKNOWN | Settings, payment controllers, jobs, mail | Cited web/API payment entries; gateway callback reachability UNKNOWN | Payment/refund/payout overlap; provider behavior unknown | CAP-006–011, CAP-021, CAP-046–047; `OrderStoreController.php:41-518`; `web.php:844-852,881-999` |
+| CAND-004 | Student/user, instructor, admin (DERIVED) | Included progress, quiz, enrollment, certificate records | Order/free-enrollment to learning/progress relation DERIVED; module behavior UNKNOWN | `orders`, `course_progress`, `certificates`, assignment/attendance tables | UNKNOWN — no focused route/middleware audit | Module references, course/order records | Included entries cited; module-dependent path reachability UNKNOWN | Certificate/assessment and module boundaries overlap | CAP-005, CAP-012, CAP-013, CAP-025, CAP-030–034, CAP-085; `CourseProgressController` routes in CAP-085 |
+| CAND-005 | User/student, instructor, admin (DERIVED) | Meeting controllers and CAP-080 `OrderStoreController.php:61-105` | Meeting/payment flow DERIVED; provider execution UNKNOWN | Meeting records and `paid_mettings` | UNKNOWN — no focused route/middleware audit | Zoom/BBB/Google Meet configuration/providers | Cited paid-meeting path; provider reachability UNKNOWN | Provider/module availability and access prerequisites unknown | CAP-014–016, CAP-080; `OrderStoreController.php:61-105` |
+| CAND-006 | Instructor, admin, user (DERIVED) | Payout, plan, dashboard, report records | Order-to-payout relationship DERIVED from CAP-007; payout completion UNKNOWN | `pending_payouts`, `completed_payouts`, plans | Admin/instructor authorization inherited; exact enforcement UNKNOWN | `OrderStoreController`, settings, InstructorPlan job | Routes inherited; queue outcome UNKNOWN | Commerce overlap and queued plan expiry uncertainty | CAP-011, CAP-028, CAP-048, CAP-052, CAP-084; CAP-007; `routes/web.php:459-460,733-734` |
+| CAND-007 | User/student, instructor, admin (DERIVED) | Included engagement/support controllers and records | Submit/respond/reward flows DERIVED; asynchronous affiliate result UNKNOWN | Wishlist, review, Q&A, affiliate, support, attendance records | UNKNOWN — no focused route/middleware audit | `CheckReferral`, `AffiliatesPoints`, notification/support controllers | Included routes inherited; exact reachability UNKNOWN | Community, learning, and marketing overlap | CAP-018–020, CAP-026, CAP-029, CAP-031–033, CAP-054; CAP-026 |
+| CAND-008 | User, admin, instructor (DERIVED) | Coupon/search/landing/presentation entries | Promotion modifies order flow DERIVED; search/provider behavior UNKNOWN | `coupons`, `flash_sales`, catalog/presentation records | UNKNOWN — no focused route/middleware audit | `OrderStoreController`, possible Algolia config | Included entries inherited; Algolia runtime UNKNOWN | Commerce/CMS overlap; presentation layer incomplete | CAP-009, CAP-035, CAP-039, CAP-049, CAP-055, CAP-060, CAP-069, CAP-070; CAP-007; CAP-049 |
+| CAND-009 | User, admin, support staff (DERIVED) | `web.php:943-946`; `RefundController`; support controllers | Request/review/refund-controller invocation VERIFIED where cited; provider settlement UNKNOWN | `refund_courses`, `orders`, support records | CAP-072 says admin-only; enforcement details UNKNOWN | Gateway-specific refund methods, wallet/original payment behavior | Refund route/controller cited; outcome UNKNOWN | Commerce/support boundary and gateway completion unknown | CAP-021, CAP-054, CAP-072; `web.php:943-946`; `RefundController.php:1-100+` |
+| CAND-010 | Admin, instructor, user (DERIVED) | Blog/page/landing/ebook/invoice references | Publication/rendering flow DERIVED; ebook module behavior UNKNOWN | `blogs`, page/landing/invoice references | UNKNOWN — no focused route/middleware audit | CMS controllers, missing module source for ebook references | Blog route cited; ebook path UNKNOWN | Marketing and module overlap | CAP-022, CAP-039, CAP-056, CAP-059; `web.php:371-375,1147-1149`; CAP-082 |
+| CAND-011 | Admin, instructor, user (DERIVED) | Settings, middleware, commands, admin/update controllers | Administrative action flows DERIVED; OTA/command execution UNKNOWN | `settings`, IP/OTP/administration records | `IsAdmin.php:20` fact applies where middleware used; exact route coverage UNKNOWN | Scheduler, commands, OTA, configuration | Controllers/commands cited; production execution UNKNOWN | Cross-cutting dependencies and deployment state unknown | CAP-038, CAP-041, CAP-042, CAP-051, CAP-058, CAP-061–066, CAP-073–077, CAP-082, CAP-086–088; `DemoReset.php`; `Kernel.php:32-36` |
+| CAND-012 | User, admin (DERIVED) | Currency/language references and `SwitchLanguage.php:40` | Preference/configuration flow DERIVED; currency conversion runtime UNKNOWN | `currencies`, `languages`, session preference | UNKNOWN — no focused route/middleware audit | Settings/session/middleware | Language middleware citation supports code path; full reachability UNKNOWN | Commerce/configuration overlap | CAP-036, CAP-037, CAP-083; `SwitchLanguage.php:40` |
+| CAND-013 | User, admin (DERIVED) | Notification, verification, SMS, push references | Dispatch/configuration flow DERIVED; provider delivery UNKNOWN | Notification and user/OTP references | UNKNOWN — no focused route/middleware audit | Mail, notifications, Twilio, OneSignal | Code references recorded; external delivery UNKNOWN | Authentication and engagement overlap | CAP-027, CAP-043, CAP-067, CAP-068; Section 11 integration unknowns |
+| CAND-014 | User, admin (DERIVED) | `web.php:1145-1146`; search/comparison/sitemap references | Search/filter request flow DERIVED; indexing/sitemap runtime UNKNOWN | Course/catalog records | UNKNOWN — no focused route/middleware audit | Search controller, possible Algolia, sitemap command | Search route cited; provider/scheduler behavior UNKNOWN | Marketing/catalog overlap | CAP-049, CAP-055, CAP-060; `web.php:1145-1146`; CAP-049 |
+
+**Boundary confidence:** Every candidate remains **LOW** as recorded in its individual Section 6 entry. No stronger confidence is claimed by this matrix.
 
 ### CAND-001 · User Management & Authentication
 **Included capabilities:** CAP-001, CAP-002, CAP-024, CAP-028, CAP-043, CAP-044, CAP-045, CAP-050.  
@@ -1310,7 +1333,7 @@ Facebook, Google, GitLab, Amazon, LinkedIn, Twitter — configured via `SettingC
 
 ## 7. Candidate Feature Detailed Analysis
 
-Candidate records `CAND-001` through `CAND-014` are retained in Section 6 evidence material. They are **partial** against contract field requirements: many records identify included capabilities, controllers, tables, entry points, and dependencies, but do not consistently document actors, execution flows, authorization, reachability, boundary confidence, boundary uncertainties, and an evidence index.
+Candidate records `CAND-001` through `CAND-014` are retained in Section 6 evidence material. Section 6 candidate evidence contract now records required fields using existing citations and explicit `UNKNOWN` values. These fields document evidence scope only; they do not establish audit coverage, runtime behavior, or handoff readiness.
 
 No product decision follows from this grouping. Candidate boundaries remain **DERIVED** from static repository relationships unless an entry cites direct route/controller/model evidence.
 
@@ -1512,12 +1535,12 @@ Components discovered but not confidently mapped to a capability or candidate fe
 
 ### BROKEN Components
 
-| Component | Type | Evidence | Impact |
-|---|---|---|---|
-| **Queue Jobs (3)** | Job | `AffiliatesPoints.php`, `EnrollExpire.php`, `InstructorPlan.php` all use `Auth::user()` in queue context | Will fail at runtime — Auth facade not available in queue worker |
-| **Module Dependencies (19)** | Module | `modules_statuses.json` lists 19 active modules, `Modules/` directory absent | Certificate, Ebook, Homework, Forum, Resume features — all return 500 errors |
-| **Certificate Generation** | Feature | Depends on `Modules\Certificate\Entities\CertificateDesign` | Non-functional — class not found exception |
-| **Ebook System** | Feature | Depends on `Modules\Ebook\Entities\Ebook` | Non-functional — class not found exception |
+| **Queue Jobs (3)** | Job | `AffiliatesPoints.php`, `EnrollExpire.php`, `InstructorPlan.php` directly use `Auth::user()` | Queue-worker failure risk is DERIVED; actual execution and outcome UNKNOWN |
+| **Module Dependencies (19)** | Module | `modules_statuses.json` lists 19 active modules; `Modules/` directory absent | Cited module references have missing-source risk in this snapshot; exact feature/runtime effect UNKNOWN |
+| **Certificate Generation** | Feature | References `Modules\\Certificate\\Entities\\CertificateDesign` | Missing dependency risk DERIVED; exception/runtime outcome UNKNOWN |
+| **Ebook System** | Feature | References `Modules\\Ebook\\Entities\\Ebook` | Missing dependency risk DERIVED; exception/runtime outcome UNKNOWN |
+| **Homework Submission** | Feature | Depends on `Modules\\Homework` reference | Missing dependency risk DERIVED; exception/runtime outcome UNKNOWN |
+| **Forum** | Feature | Routes reference `Modules\\Forum\\Http\\Controllers` | Missing dependency risk DERIVED; route/module runtime outcome UNKNOWN |
 | **Homework Submission** | Feature | Depends on `Modules\Homework` | Non-functional — class not found exception |
 | **Forum** | Feature | Routes reference `Modules\Forum\Http\Controllers` | Non-functional — class not found exception |
 
@@ -1527,11 +1550,11 @@ Components discovered but not confidently mapped to a capability or candidate fe
 
 | Component | Type | Evidence | Reason |
 |---|---|---|---|
-| **Policy Authorization** | Authorization | 23 policy files in `app/Policies/`, `AuthServiceProvider::$policies` empty | Not registered — policy checks will fail |
+| **Policy Authorization** | Authorization | 23 policy files in `app/Policies/`, `AuthServiceProvider::$policies` empty | Registration state VERIFIED; effect on each policy check UNKNOWN |
 | **Scheduled Tasks** | Automation | Commands exist, `Kernel::schedule()` method empty | Never executed automatically |
 | **CLI Commands (3)** | Command | `PurchaseFile`, `SendMail`, `Unsubscribe` not registered in Kernel | Cannot be called via artisan |
 | **License Tracking** | Utility | `Tracker.php:track()` method commented out | Never executes |
-| **Module Routes** | Routes | 19 modules have route definitions | Routes registered but controllers missing |
+| **Module Routes** | Routes | Module route definitions referenced | Registered-controller availability and reachability UNKNOWN |
 
 ---
 
@@ -1539,10 +1562,10 @@ Components discovered but not confidently mapped to a capability or candidate fe
 
 | Component | Inconsistency | Evidence | Impact |
 |---|---|---|---|
-| **Authorization System** | Dual system | Raw `users.role` column checks + Spatie Permission tables/traits | Some routes check column, some attempt policies — authorization bypasses possible |
+| **Authorization System** | Dual system | Raw `users.role` column checks + Spatie Permission tables/traits | Inconsistent enforcement risk DERIVED; route-specific outcome UNKNOWN |
 | **IsAdmin Middleware** | Misleading name | Named `IsAdmin` but allows any non-'user' role | Instructors can access admin-only routes if only this middleware used |
 | **Order Table** | Dual purpose | Serves as both financial transaction record AND enrollment record | Cannot separate payment from enrollment, cannot track instalment payments properly |
-| **Settings Storage** | Mixed concerns | Single `settings` table row stores payment credentials, SMTP config, site settings, API keys | No separation, no encryption, no versioning |
+| **Settings Storage** | Mixed concerns | Single `settings` table row stores configuration references | Storage separation is observed; encryption, access controls, and runtime exposure UNKNOWN |
 | **Naming Conventions** | Typos | `Attandance` (Attendance), `MaintananceMode` (Maintenance), `breadcumb` (breadcrumb) | Code quality issue |
 
 ---
@@ -1617,7 +1640,7 @@ Questions the repository cannot answer through static analysis alone.
 | **Can paid meetings be purchased without course enrollment?** | CAP-080 (Live Class Paid Enrollment) | Separate payment flow exists, but prerequisites not verified |
 | **Are bundles priced dynamically or fixed?** | CAP-017 (Bundles) | Bundle has discount_price field, but calculation logic not traced |
 | **Can users re-attempt failed quizzes unlimited times?** | CAP-012 (Quiz System) | No attempt limit found, but enforcement may exist in views |
-| **What triggers EnrollExpire job?** | CAP-071 (Jobs) | Job exists but dispatch location not found (BROKEN regardless due to Auth::user() bug) |
+| **What triggers EnrollExpire job?** | CAP-071 (Jobs) | Job exists; dispatch location and queue-worker outcome UNKNOWN |
 
 ---
 
@@ -1636,14 +1659,14 @@ Questions the repository cannot answer through static analysis alone.
 
 | Feature | Unknown Behavior |
 |---|---|
-| **Certificate Templates** | Design options, custom fields, validation rules |
+| **Certificate Templates** | Design options, custom fields, validation rules; module runtime behavior UNKNOWN |
 | **Ebook Reader** | DRM, download limits, formats supported |
 | **Homework Grading** | Rubrics, file types accepted, instructor feedback workflow |
 | **Forum** | Moderation, threading, attachments |
 | **Resume/Job Board** | Posting workflow, employer features, privacy settings |
 | **Google Classroom Sync** | Bidirectional sync, grade passback, roster updates |
 
-All module-dependent features are BROKEN in current repository state, so unknowns cannot be resolved without module source code.
+Missing module source is VERIFIED for this repository snapshot. Individual module-path behavior remains DERIVED or UNKNOWN unless separately evidenced; these unknowns cannot be resolved from current artifact without module source or runtime evidence.
 
 ---
 
@@ -1758,11 +1781,11 @@ This section documents capabilities, execution paths, and system behaviors disco
 | **Purpose** | Receive asynchronous payment confirmations from gateways |
 | **Entry Points** | `web.php:993` (SSLCommerz IPN), `web.php:1130` (PayFlexi webhook) |
 | **Controllers** | `SslCommerzPaymentController@ipn`, `PayFlexiController@webhook` |
-| **Execution Flow** | Gateway sends POST to webhook URL → controller validates signature → updates order status → sends confirmation email |
-| **State** | VERIFIED (only 2 gateways have explicit webhook routes) |
-| **Reachability** | REACHABLE (no middleware — webhooks must be publicly accessible) |
+| **Execution Flow** | Gateway POST/callback handling is indicated by cited routes/controllers; signature validation, order update, and mail behavior beyond cited code are UNKNOWN |
+| **State** | VERIFIED (two explicit webhook routes recorded); comprehensive gateway/webhook audit UNKNOWN |
+| **Reachability** | Public callback intent DERIVED; exact middleware coverage UNKNOWN |
 | **Evidence** | `routes/web.php:993,1130`; callback methods found in Flutterwave, Iyzico, Paystack controllers |
-| **Gaps** | Most gateways use synchronous callbacks, not webhooks. No replay protection visible. |
+| **Gaps** | Gateway-wide callback model and replay protection are UNKNOWN; no exhaustive audit performed. |
 
 ### CAP-079 · Drip Content Enablement
 
@@ -1812,10 +1835,10 @@ This section documents capabilities, execution paths, and system behaviors disco
 | **Purpose** | Check if optional modules are installed before using features |
 | **Entry Points** | Throughout controllers: `Module::has('ModuleName') && Module::find('ModuleName')->isEnabled()` |
 | **Modules Referenced** | Certificate, Homework, Resume, Forum, Ebook, Esewa, Smanager, Googleclassroom, Blizzard |
-| **State** | BROKEN (all modules absent from repository) |
-| **Reachability** | UNREACHABLE (module code missing) |
+| **State** | VERIFIED (module checks/references; source absent from inspected repository) + UNKNOWN (module runtime behavior) |
+| **Reachability** | UNKNOWN — missing source alone does not establish reachability |
 | **Evidence** | `AddonController.php:26`, `Api/OtherApiController.php:988-997`, `CourseController.php:946` |
-| **Impact** | Certificate generation, homework, forum, ebook, resume features — all unavailable. |
+| **Impact** | Cited module-dependent feature behavior is UNKNOWN; missing-source dependency risk is DERIVED. |
 
 ### CAP-083 · Language Switching
 
@@ -1886,25 +1909,25 @@ This section documents capabilities, execution paths, and system behaviors disco
 
 Evidence: `modules_statuses.json` lists 19 modules. `Modules/` directory does NOT exist. Controllers reference via `Module::has()`. Namespace in `CategoryController.php:3` references `namespace Modules\Ebook\Http\Controllers;`.
 
-**Conclusion:** Module source code missing. All module-dependent features BROKEN or UNREACHABLE.
+**Conclusion:** Module source code is missing from inspected repository (`VERIFIED`). Individual module-dependent paths require cited dependency evidence; their runtime behavior and production availability are `UNKNOWN`.
 
 #### Claim: "Queue jobs use Auth::user() in queue context" — **VERIFIED**
 
 Evidence: `app/Jobs/AffiliatesPoints.php:37,46`, `EnrollExpire.php:37`, `InstructorPlan.php:37` all use `Auth::user()` directly.
 
-**Conclusion:** All 3 queue jobs BROKEN. Would fail at runtime.
+**Conclusion:** Direct `Auth::user()` use is `VERIFIED`. Queue-worker failure is a `DERIVED` risk; actual execution and runtime result are `UNKNOWN`.
 
 #### Claim: "No database transactions in order creation" — **VERIFIED**
 
 Evidence: No `DB::transaction()` wrapper in `OrderStoreController.php`. Multiple inserts without atomicity.
 
-**Conclusion:** Race conditions possible. Critical integrity issue.
+**Conclusion:** Partial-write and concurrency risk in this cited path is `DERIVED`; actual runtime integrity outcome is `UNKNOWN`.
 
-#### Claim: "No payment idempotency" — **VERIFIED**
+#### Claim: "No same-`transaction_id` check in cited order-creation path" — **VERIFIED**
 
 Evidence: No check for existing order with same `transaction_id` before creating.
 
-**Conclusion:** Duplicate orders possible if callback fires twice.
+**Conclusion:** Duplicate-order risk for cited path is `DERIVED`; callback retry behavior and actual duplicate outcomes are `UNKNOWN`.
 
 #### Claim: "Zero foreign keys" — **VERIFIED**
 
@@ -1999,10 +2022,10 @@ Discovered through: Console commands, queue jobs, gift flow, OTA system, refund 
 
 | Requirement | Status |
 |---|---|
-| All 14 required sections present | ⚠️ PARTIAL — headings present; Section 7 fields incomplete |
+| All 14 required sections present | ⚠️ PARTIAL — headings present; candidate fields reconciled from existing evidence, broader coverage remains partial |
 | Capability inventory with IDs | ✅ COMPLETE (CAP-001 to CAP-088) |
 | Detailed capability analysis | ✅ COMPLETE (Section 5) |
-| Candidate feature grouping | ⚠️ PARTIAL (CAND-001 to CAND-014 retained; required fields incomplete) |
+| Candidate feature grouping | ⚠️ PARTIAL — CAND-001 to CAND-014 required fields recorded with explicit UNKNOWN values; boundaries remain DERIVED and LOW confidence |
 | Cross-feature relationships | ✅ COMPLETE (Section 8) |
 | Unmapped components | ✅ COMPLETE (Section 9) |
 | Dead/Broken/Inconsistent | ✅ COMPLETE (Section 10) |
@@ -2034,11 +2057,11 @@ Discovered through: Console commands, queue jobs, gift flow, OTA system, refund 
 | **Live Class Integrations** | 3 (Zoom, BBB, Google Meet) |
 | **Social Login Providers** | 6 (FB, Google, GitLab, Amazon, LinkedIn, Twitter) |
 | **CLI Commands** | 7 |
-| **Queue Jobs** | 3 (all BROKEN: `Auth::user()` bug) |
+| **Queue Jobs** | 3 (direct `Auth::user()` use recorded; queue runtime outcome UNKNOWN) |
 | **Notifications** | 5 |
 | **Mail Classes** | 10 |
-| **Modules Configured** | 19 (all absent from repo) |
-| **Policies Defined** | 23 (not registered, effectively unused) |
+| **Modules Configured** | 19 configured; `Modules/` absent from inspected repository |
+| **Policies Defined** | 23; registration state recorded, effective use UNKNOWN |
 | **Blade Views** | 695 total (365 admin, 23 instructor, 74 front, others in themes) |
 | **Blade Components** | 1 (`breadcumb.blade.php`) |
 | **Database Tables** | ~60+ core tables |
@@ -2046,8 +2069,8 @@ Discovered through: Console commands, queue jobs, gift flow, OTA system, refund 
 | **Automated Tests** | 0 (only scaffold files) |
 | **Critical Issues** | 10+ |
 | **Security Issues** | 8+ |
-| **BROKEN Components** | 3 queue jobs + 19 module-dependent features |
-| **UNREACHABLE Components** | All module-dependent code paths |
+| **BROKEN Components** | No blanket runtime total asserted; see evidence-scoped Section 10 classifications |
+| **UNREACHABLE Components** | No blanket module-path classification asserted; see Sections 10–12 |
 
 ---
 
@@ -2072,18 +2095,18 @@ The insmart LMS is a **feature-rich, monolithic Laravel 10 application** designe
 
 **Critical architectural weaknesses remain:**
 
-1. **Missing modules** — 19 configured modules absent from repository, breaking certificate templates, ebooks, homework, forum, resume features.
-2. **No database transactions** — order creation can fail mid-process, leaving inconsistent state.
-3. **No payment idempotency** — duplicate charges possible if callbacks replay.
-4. **Queue jobs broken** — all 3 jobs use `Auth::user()` in queue context, will fail at runtime.
-5. **Credentials in database** — payment keys likely stored unencrypted in `settings` table.
+1. **Missing modules** — 19 configured modules are absent from inspected repository (`VERIFIED`); impact on each module-dependent path is `DERIVED` or `UNKNOWN`.
+2. **Transaction scope** — cited `OrderStoreController` multi-write path has no documented transaction wrapper (`VERIFIED`); partial-write outcome is `DERIVED` and runtime state `UNKNOWN`.
+3. **Idempotency scope** — cited order-creation path has no documented same-`transaction_id` check (`VERIFIED`); callback replay and duplicate outcomes are `UNKNOWN`.
+4. **Queue jobs** — all 3 cited jobs directly use `Auth::user()` (`VERIFIED`); queue failure is `DERIVED`, runtime outcome `UNKNOWN`.
+5. **Credentials/settings** — configuration is read from `settings` in cited code (`VERIFIED`); encryption, access, and exposure are `UNKNOWN`.
 6. **Zero foreign keys** — referential integrity entirely application-level, orphaned records possible.
 7. **No tests** — no way to verify behavior changes.
 8. **Destructive CLI commands** — `demo:reset` truncates all tables including users, no confirmation.
-9. **OTA update risks** — no signature verification, no rollback, extracts over live application.
-10. **Policies not registered** — 23 policy files exist but not registered in `AuthServiceProvider`.
+9. **OTA update risks** — controller/configuration evidence supports a `DERIVED` update risk; signature, rollback, and production execution outcomes are `UNKNOWN`.
+10. **Policies** — 23 policy files and empty `$policies` map are recorded (`VERIFIED`); route/policy effect is `UNKNOWN`.
 
-**The system is functional for basic course delivery but high-risk for production use without significant remediation.** The massive feature set (88 capabilities identified across 14 candidate feature groups) makes incremental migration challenging. The absence of module source code breaks significant functionality (certificates, homework, ebooks, forum).
+**No runtime fitness or production-risk conclusion follows from this inventory.** The document records 88 inherited capability IDs and 14 derived candidate groups. Missing module source creates evidence-scoped dependency risk; actual feature and production behavior remain `UNKNOWN` without module source and runtime evidence.
 
 ---
 
