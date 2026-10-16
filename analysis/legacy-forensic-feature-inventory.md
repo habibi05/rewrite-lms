@@ -1449,7 +1449,274 @@ Facebook, Google, GitLab, Amazon, LinkedIn, Twitter — configured via `SettingC
 
 ---
 
-## 12. Summary Statistics
+## 12. Second Discovery Pass — Additional Findings
+
+**Conducted:** 2026-10-16 (following first-pass completion)
+
+This section documents capabilities, execution paths, and system behaviors discovered through independent evidence re-examination from different directions: routes→handlers, models→usage, views→actions, APIs→consumers, events→listeners, configuration→integrations, error paths, and administrative utilities.
+
+---
+
+### Additional Capabilities Discovered
+
+### CAP-071 · Gift Course Purchase Flow
+
+| Attribute | Detail |
+|---|---|
+| **Purpose** | Allow purchasing a course as a gift for another user (by email) |
+| **Entry Points** | `web.php:1043-1044`; `GiftCourseController@giftview`, `@giftcheckout` |
+| **Controllers** | `GiftCourseController` |
+| **Models** | `Course`, `User` |
+| **Execution Flow** | View gift page for course → enter recipient email, name → system checks if user exists → if not, creates user with default password `123456` and auto-verifies email → stores course ID and user ID in session (`one_order_course`, `one_order_user`) → redirects to standard checkout → `OrderStoreController` detects session keys and creates order for that user instead of authenticated user |
+| **Side Effects** | Creates new User record if email not found. Auto-verifies email (`email_verified_at` set). Mail: `Mail\GiftOrder` exists but usage not confirmed. |
+| **State** | VERIFIED |
+| **Reachability** | REACHABLE (web route, no middleware restriction) |
+| **Evidence** | `app/Http/Controllers/GiftCourseController.php:1-94` |
+| **Risks** | Auto-creates users with weak default password. No confirmation flow visible. |
+
+### CAP-072 · Course Refund Processing
+
+| Attribute | Detail |
+|---|---|
+| **Purpose** | Admin-initiated refunds for paid courses, with gateway-specific refund API calls |
+| **Entry Points** | Admin routes; `RefundController@index`, `@edit`, `@update` |
+| **Controllers** | `RefundController` |
+| **Models** | `RefundCourse`, `Order` |
+| **DB Tables** | `refund_courses` |
+| **Execution Flow** | Admin views refund request → admin approves → system calls gateway-specific refund method (PayPal, Stripe, Paystack, Instamojo, PayTM, RazorPay, BankTransfer) → gateway processes refund → status updated |
+| **State** | VERIFIED |
+| **Reachability** | REACHABLE (admin-only) |
+| **Evidence** | `app/Http/Controllers/RefundController.php:1-100+`, `app/RefundCourse.php:1-27` |
+
+### CAP-073 · Admin Bulk Delete Operations
+
+| Attribute | Detail |
+|---|---|
+| **Purpose** | Delete multiple records at once via checkboxes |
+| **Controllers** | `BulkdeleteController`, plus ~30+ controllers with `bulk_delete` methods |
+| **Execution Flow** | Admin selects checkboxes → submits form → validates `checked[]` array → `Model::whereIn('id', $request->checked)->delete()` → redirects |
+| **Scope** | Sliders, Testimonials, Ads, Countries, Cities, Meetings, Instructors, Users, Courses, Blogs, Categories, Assignments, Support Tickets, Reports |
+| **State** | VERIFIED |
+| **Reachability** | REACHABLE (admin routes) |
+| **Evidence** | `app/Http/Controllers/BulkdeleteController.php:1-380` |
+| **Risks** | Hard delete. No cascade handling. No transaction wrapper. |
+
+### CAP-074 · Over-The-Air (OTA) Update System
+
+| Attribute | Detail |
+|---|---|
+| **Purpose** | Remote application updates via web interface — downloads package, extracts, runs migrations |
+| **Entry Points** | Admin; `OtaUpdateController@getotaview`, `@update`, `@checkforupate`, `@mergeQuickupdate` |
+| **Controllers** | `OtaUpdateController` |
+| **Execution Flow** | Check GitHub for updates → download ZIP → extract to base path → run migrations → update version file |
+| **State** | VERIFIED |
+| **Reachability** | REACHABLE (admin-only) |
+| **Evidence** | `app/Http/Controllers/OtaUpdateController.php:1-439` |
+| **Risks** | No signature verification. No rollback. Extracts over live app. Localhost bypass license check. |
+
+### CAP-075 · Demo Reset Command
+
+| Attribute | Detail |
+|---|---|
+| **Purpose** | CLI command to reset application to demo state |
+| **Entry Points** | `php artisan demo:reset` |
+| **Controllers** | `app/Console/Commands/DemoReset.php` |
+| **Execution Flow** | Truncates 23+ tables → deletes files in `public/images/*` and `public/video/class/*` → deletes session files |
+| **State** | VERIFIED |
+| **Reachability** | REACHABLE (CLI, no auth check) |
+| **Evidence** | `app/Console/Commands/DemoReset.php:1-320` |
+| **Risks** | DESTRUCTIVE. No confirmation. No backup. Truncates `users` table. |
+
+### CAP-076 · Database Backup Command
+
+| Attribute | Detail |
+|---|---|
+| **Purpose** | CLI command to create database backup via mysqldump |
+| **Entry Points** | `php artisan database:backup` |
+| **Controllers** | `app/Console/Commands/DatabaseBackUp.php` |
+| **Execution Flow** | Creates `storage/app/backup/` → runs `mysqldump` → saves to `backup.sql` |
+| **State** | VERIFIED |
+| **Reachability** | REACHABLE (CLI) |
+| **Evidence** | `app/Console/Commands/DatabaseBackUp.php:1-60` |
+| **Risks** | Backup file overwritten each time. No timestamping. |
+
+### CAP-077 · Demo Content Import
+
+| Attribute | Detail |
+|---|---|
+| **Purpose** | Import demo courses, categories, blogs from seeders and extract demo images/videos from ZIP |
+| **Entry Points** | `php artisan import:demo` |
+| **Controllers** | `app/Console/Commands/ImportDemo.php` |
+| **Execution Flow** | Truncates Cart, Wishlist, Order tables → runs 12+ seeders → extracts `public/democontent.zip` → deletes session files |
+| **State** | VERIFIED |
+| **Reachability** | REACHABLE (CLI) |
+| **Evidence** | `app/Console/Commands/ImportDemo.php:1-119` |
+| **Risks** | Truncates active orders. Extracts without path validation. |
+
+### CAP-078 · Payment Webhooks (Limited)
+
+| Attribute | Detail |
+|---|---|
+| **Purpose** | Receive asynchronous payment confirmations from gateways |
+| **Entry Points** | `web.php:993` (SSLCommerz IPN), `web.php:1130` (PayFlexi webhook) |
+| **Controllers** | `SslCommerzPaymentController@ipn`, `PayFlexiController@webhook` |
+| **Execution Flow** | Gateway sends POST to webhook URL → controller validates signature → updates order status → sends confirmation email |
+| **State** | VERIFIED (only 2 gateways have explicit webhook routes) |
+| **Reachability** | REACHABLE (no middleware — webhooks must be publicly accessible) |
+| **Evidence** | `routes/web.php:993,1130`; callback methods found in Flutterwave, Iyzico, Paystack controllers |
+| **Gaps** | Most gateways use synchronous callbacks, not webhooks. No replay protection visible. |
+
+### CAP-079 · Drip Content Enablement
+
+| Attribute | Detail |
+|---|---|
+| **Purpose** | Enable gradual content release for courses based on schedule |
+| **Entry Points** | Course create/edit forms; `CourseController@store`, `@update` |
+| **Models** | `Course` (columns: `drip_enable` boolean, `duration_type` enum) |
+| **Execution Flow** | Instructor enables drip content → sets `drip_enable = 1` → system uses `duration_type` (days or months) to control visibility |
+| **State** | DERIVED (flag exists, enforcement logic not traced) |
+| **Reachability** | REACHABLE (flag can be set) |
+| **Evidence** | `app/Course.php:32` (fillable); `CourseController.php:274,419`; `Api/InstructorApiController.php:1102,1265` |
+| **Enforcement** | Lesson-hiding logic NOT FOUND in controllers. May be in views or JavaScript. Runtime behavior UNVERIFIED. |
+
+### CAP-080 · Live Class Paid Enrollment
+
+| Attribute | Detail |
+|---|---|
+| **Purpose** | Charge for individual live class access separate from course enrollment |
+| **Entry Points** | `OrderStoreController@orderstore` (lines 61-105) |
+| **Controllers** | `OrderStoreController` |
+| **Models** | `PaidMettings`, `Meeting`, `BBL`, `JitsiMeeting`, `Googlemeet` |
+| **DB Tables** | `paid_mettings` |
+| **Execution Flow** | User initiates payment → session stores meeting details → payment callback → creates `PaidMettings` record → clears session |
+| **State** | VERIFIED |
+| **Reachability** | REACHABLE |
+| **Evidence** | `app/Http/Controllers/OrderStoreController.php:61-105` |
+
+### CAP-081 · Quiz Result Reporting & Re-attempt
+
+| Attribute | Detail |
+|---|---|
+| **Purpose** | Display quiz results, allow re-attempts, instructor views reports |
+| **Entry Points** | `QuizStartController@show`, `@tryagain`, `@sub_show`, `@subtryagain` |
+| **Controllers** | `QuizStartController`, `QuizTopicController` |
+| **Models** | `QuizTopic`, `QuizAnswer`, `Quiz` |
+| **Execution Flow** | Student completes quiz → system calculates score → displays result → student can delete answers and retake → percentage stored in `users.exam_percentage` |
+| **State** | VERIFIED |
+| **Reachability** | REACHABLE |
+| **Evidence** | `app/Http/Controllers/QuizStartController.php:48-78,131-135` |
+| **Limitation** | No attempt limit. Re-attempt deletes history. Subjective answers need manual approval. |
+
+### CAP-082 · Module Dependency Checks
+
+| Attribute | Detail |
+|---|---|
+| **Purpose** | Check if optional modules are installed before using features |
+| **Entry Points** | Throughout controllers: `Module::has('ModuleName') && Module::find('ModuleName')->isEnabled()` |
+| **Modules Referenced** | Certificate, Homework, Resume, Forum, Ebook, Esewa, Smanager, Googleclassroom, Blizzard |
+| **State** | BROKEN (all modules absent from repository) |
+| **Reachability** | UNREACHABLE (module code missing) |
+| **Evidence** | `AddonController.php:26`, `Api/OtherApiController.php:988-997`, `CourseController.php:946` |
+| **Impact** | Certificate generation, homework, forum, ebook, resume features — all unavailable. |
+
+### CAP-083 · Language Switching
+
+| Attribute | Detail |
+|---|---|
+| **Purpose** | Allow users to switch site language; store preference in session |
+| **Middleware** | `app/Http/Middleware/SwitchLanguage.php` |
+| **State** | VERIFIED |
+| **Reachability** | REACHABLE |
+| **Evidence** | `app/Http/Middleware/SwitchLanguage.php:40` |
+
+### CAP-084 · Admin Financial Reports
+
+| Attribute | Detail |
+|---|---|
+| **Purpose** | Generate revenue reports for admin and per-instructor |
+| **Entry Points** | `web.php:459-460`; `RevenueReportController@report`, `@instructorReport` |
+| **State** | DERIVED |
+| **Reachability** | REACHABLE (admin-only) |
+| **Evidence** | `routes/web.php:459-460,733-734` |
+
+### CAP-085 · Course Progress Tracking
+
+| Attribute | Detail |
+|---|---|
+| **Purpose** | Track which chapters/lessons user completed; generate progress reports |
+| **Entry Points** | `web.php:796-797`; `CourseProgressController@progressreport`, `@progressview` |
+| **Models** | `CourseProgress` |
+| **State** | VERIFIED |
+| **Reachability** | REACHABLE |
+| **Evidence** | `routes/web.php:796-797`; `CertificateController` queries `course_progress` |
+
+### CAP-086 · IP Blocking
+
+| Attribute | Detail |
+|---|---|
+| **Purpose** | Block specific IP addresses from accessing the site |
+| **Middleware** | `ip_block` |
+| **State** | DERIVED |
+| **Reachability** | REACHABLE |
+| **Evidence** | Middleware in `app/Http/Kernel.php`; used in `api.php:29` |
+
+### CAP-087 · Maintenance Mode
+
+| Attribute | Detail |
+|---|---|
+| **Purpose** | Disable site access for non-admins during maintenance |
+| **Middleware** | `maintanance_mode` |
+| **State** | DERIVED |
+| **Reachability** | REACHABLE |
+| **Evidence** | Middleware in `app/Http/Kernel.php` |
+
+### CAP-088 · Admin Impersonation
+
+| Attribute | Detail |
+|---|---|
+| **Purpose** | Admin can login as any user to see their view |
+| **Entry Points** | `AlluserController@login` |
+| **State** | VERIFIED (first pass) |
+| **Reachability** | REACHABLE (admin-only) |
+| **Risks** | No confirmation. No audit log. |
+
+---
+
+### Verification of First-Pass Claims
+
+#### Claim: "19 configured modules are absent" — **VERIFIED**
+
+Evidence: `modules_statuses.json` lists 19 modules. `Modules/` directory does NOT exist. Controllers reference via `Module::has()`. Namespace in `CategoryController.php:3` references `namespace Modules\Ebook\Http\Controllers;`.
+
+**Conclusion:** Module source code missing. All module-dependent features BROKEN or UNREACHABLE.
+
+#### Claim: "Queue jobs use Auth::user() in queue context" — **VERIFIED**
+
+Evidence: `app/Jobs/AffiliatesPoints.php:37,46`, `EnrollExpire.php:37`, `InstructorPlan.php:37` all use `Auth::user()` directly.
+
+**Conclusion:** All 3 queue jobs BROKEN. Would fail at runtime.
+
+#### Claim: "No database transactions in order creation" — **VERIFIED**
+
+Evidence: No `DB::transaction()` wrapper in `OrderStoreController.php`. Multiple inserts without atomicity.
+
+**Conclusion:** Race conditions possible. Critical integrity issue.
+
+#### Claim: "No payment idempotency" — **VERIFIED**
+
+Evidence: No check for existing order with same `transaction_id` before creating.
+
+**Conclusion:** Duplicate orders possible if callback fires twice.
+
+#### Claim: "Zero foreign keys" — **VERIFIED**
+
+Evidence: `grep -rn 'foreign(' database/migrations/` returned no results. 203 migrations, none define FK constraints.
+
+**Conclusion:** All referential integrity application-level. Orphaned records possible.
+
+---
+
+## 13. Summary Statistics (Updated After Second Pass)
 
 | Metric | Count |
 |---|---|
@@ -1459,25 +1726,30 @@ Facebook, Google, GitLab, Amazon, LinkedIn, Twitter — configured via `SettingC
 | **Routes (API)** | ~120+ (api.php 505 lines) |
 | **Middleware** | 19 |
 | **Migrations** | 203 |
-| **Capabilities Identified** | 70 (CAP-001 to CAP-070) |
+| **Capabilities Identified** | 88 (CAP-001 to CAP-088) |
 | **Candidate Feature Groups** | 14 (CAND-001 to CAND-014) |
 | **Payment Gateways** | 19 |
 | **Live Class Integrations** | 3 (Zoom, BBB, Google Meet) |
 | **Social Login Providers** | 6 (FB, Google, GitLab, Amazon, LinkedIn, Twitter) |
 | **CLI Commands** | 7 |
-| **Queue Jobs** | 3 (all have `Auth::user()` bug) |
-| **Notifications** | 4 |
-| **Mail Classes** | 8+ |
+| **Queue Jobs** | 3 (all BROKEN: `Auth::user()` bug) |
+| **Notifications** | 5 |
+| **Mail Classes** | 10 |
 | **Modules Configured** | 19 (all absent from repo) |
-| **Database Tables** | ~60+ core tables (175 total per prior analysis doc) |
+| **Policies Defined** | 23 (not registered, effectively unused) |
+| **Blade Views** | 695 total (365 admin, 23 instructor, 74 front, others in themes) |
+| **Blade Components** | 1 (`breadcumb.blade.php`) |
+| **Database Tables** | ~60+ core tables |
 | **Foreign Keys** | 0 |
-| **Automated Tests** | 0 (only scaffolds) |
+| **Automated Tests** | 0 (only scaffold files) |
 | **Critical Issues** | 10+ |
-| **Known Security Issues** | 8+ |
+| **Security Issues** | 8+ |
+| **BROKEN Components** | 3 queue jobs + 19 module-dependent features |
+| **UNREACHABLE Components** | All module-dependent code paths |
 
 ---
 
-## 13. Conclusion
+## 14. Conclusion
 
 The insmart LMS is a **feature-rich, monolithic Laravel 10 application** designed for online course sales and delivery. It supports:
 
@@ -1489,24 +1761,43 @@ The insmart LMS is a **feature-rich, monolithic Laravel 10 application** designe
 - Affiliate/referral marketing
 - Multi-currency and multi-language support
 - Extensive admin configuration
+- Gift course purchasing
+- Course refund processing
+- Over-the-air update system
+- Admin bulk operations
 
-**Critical architectural weaknesses**:
+**Second discovery pass added 18 capabilities** (CAP-071 to CAP-088), bringing the total from 70 to 88 documented capabilities. Key discoveries include gift course flow, refund processing, bulk delete operations, OTA update system, destructive CLI commands, payment webhooks, drip content flags, paid live class enrollment, and module dependency checking.
 
-1. **Missing modules** — 19 configured modules absent from repository, breaking certificate templates, ebooks, homework, and more.
+**Critical architectural weaknesses remain:**
+
+1. **Missing modules** — 19 configured modules absent from repository, breaking certificate templates, ebooks, homework, forum, resume features.
 2. **No database transactions** — order creation can fail mid-process, leaving inconsistent state.
-3. **No payment idempotency** — duplicate charges possible.
-4. **Queue jobs broken** — all 3 jobs use `Auth::user()` in queue context.
-5. **Credentials in database** — payment keys unencrypted in `settings` table.
-6. **Zero foreign keys** — referential integrity entirely application-level.
-7. **No tests** — no way to verify behavior.
+3. **No payment idempotency** — duplicate charges possible if callbacks replay.
+4. **Queue jobs broken** — all 3 jobs use `Auth::user()` in queue context, will fail at runtime.
+5. **Credentials in database** — payment keys likely stored unencrypted in `settings` table.
+6. **Zero foreign keys** — referential integrity entirely application-level, orphaned records possible.
+7. **No tests** — no way to verify behavior changes.
+8. **Destructive CLI commands** — `demo:reset` truncates all tables including users, no confirmation.
+9. **OTA update risks** — no signature verification, no rollback, extracts over live application.
+10. **Policies not registered** — 23 policy files exist but not registered in `AuthServiceProvider`.
 
-**The system is functional for basic course delivery but high-risk for production use without significant refactoring.** The massive feature set (70 capabilities identified) makes incremental migration challenging. A phased re-architecture strategy is required, prioritizing transactional integrity, security hardening, and module dependency resolution.
+**The system is functional for basic course delivery but high-risk for production use without significant remediation.** The massive feature set (88 capabilities identified across 14 candidate feature groups) makes incremental migration challenging. The absence of module source code breaks significant functionality (certificates, homework, ebooks, forum).
 
 ---
 
-**END OF FORENSIC INVENTORY**
+> **Product Decision Boundary**
+>
+> This document is a forensic inventory of the legacy system only. No KEEP, MODIFY, REPLACE, REMOVE, or NEW decisions have been made. No target-system requirements have been created. All product treatment decisions remain pending human/Product Owner review.
+
+---
+
+**END OF FORENSIC INVENTORY — SECOND PASS COMPLETE**
 
 *Analysis Date: 2026-10-16*  
-*Commit: 68ce7ed725a0db21dab12e5f6e7e839b499e7554*  
+*Commit: 68ce7ed725a0db21dab12e5f6e7e839b499e7554 (branch: development)*  
+*Repository: `d:/laragon/www/insmart`*  
+*First Pass: 70 capabilities (CAP-001 to CAP-070)*  
+*Second Pass: +18 capabilities (CAP-071 to CAP-088)*  
+*Total Capabilities: 88*  
 *Analyst: Kiro AI*
 
