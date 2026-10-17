@@ -133,6 +133,8 @@ Monolithic Laravel 10 application with absent modular extension system (`nwidart
 
 ## 4. Capability Inventory (CAP-XXX)
 
+**Inventory certainty scope:** Section 4 records inherited static inventory evidence from cited routes, controllers, models, configuration, and commands. Each entry establishes only its documented static reference unless explicitly qualified. Runtime execution, deployment configuration, production reachability, authorization enforcement, external-provider behavior, persistence outcome, and security outcome are `UNKNOWN` without current evidence. Risk statements are `DERIVED` unless identified as cited static facts. This scope note does not replace individual certainty corrections in material CAP records.
+
 ### CAP-001 · Authentication & Registration
 
 | Attribute | Detail |
@@ -163,7 +165,7 @@ Monolithic Laravel 10 application with absent modular extension system (`nwidart
 | **DB Tables** | `users`, `roles`, `permissions`, `model_has_roles`, `role_has_permissions`, `model_has_permissions` |
 | **Execution Flow** | Request → middleware check `Auth::user()->role` → allow/redirect |
 | **Anomaly** | `IsAdmin` middleware name is misleading — allows instructors. Spatie RBAC tables exist but middleware uses raw column check, not Spatie API. Dual authorization system (Spatie + raw column). |
-| **Risks** | Instructor can access admin-only routes if only `is_admin` middleware is used. No policies registered (`AuthServiceProvider:$policies` empty). |
+| **Risks** | Cited `IsAdmin` logic allows non-`user` roles (`VERIFIED`); instructor access to each admin route is DERIVED and route-specific authorization effect is UNKNOWN. `AuthServiceProvider:$policies` is empty (`VERIFIED`); policy effect is UNKNOWN. |
 
 ### CAP-003 · Course Management (Admin/Instructor CRUD)
 
@@ -178,7 +180,7 @@ Monolithic Laravel 10 application with absent modular extension system (`nwidart
 | **Execution Flow** | Admin/Instructor → create course → add chapters → add classes (video/audio/document/iframe/text/SCORM) → set pricing → publish. Clone: deep copy course + chapters + classes + quizzes + relationships. |
 | **Side Effects** | Notifications sent to enrolled users on new content (`CourseNotification`). Image upload to `public/images/course/`. |
 | **State Transitions** | `status`: 0 (draft) → 1 (published). `featured`: 0 → 1. |
-| **Risks** | No content versioning. No audit trail. File uploads lack comprehensive validation. |
+| **Risks** | Content versioning, audit-trail, and upload-validation observations are limited to cited course-management paths; broader coverage, runtime enforcement, and security outcome are UNKNOWN. |
 
 
 
@@ -194,7 +196,7 @@ Monolithic Laravel 10 application with absent modular extension system (`nwidart
 | **Execution Flow** | User clicks lesson → `watch($id)` → verify enrollment (check `orders` table) → load class content → render player view. Content types: video (YouTube/Vimeo/self-hosted/AWS), audio, document (PDF), iframe, text, SCORM. |
 | **Drip Content** | If `course.drip_enable=1`, classes released on schedule. `CourseClass` has `drip_date` or drip rules checked in controller. |
 | **Side Effects** | Progress tracking via `CourseProgress` model. |
-| **Risks** | Direct file URLs may be guessable. No signed URL mechanism for self-hosted content. SCORM integration depends on absent modules. |
+| **Risks** | Direct file URL guessability is DERIVED. Absence of a signed-URL mechanism is limited to cited paths. SCORM dependency references are static facts; module runtime behavior is UNKNOWN. |
 
 ### CAP-005 · Course Progress Tracking
 
@@ -221,7 +223,7 @@ Monolithic Laravel 10 application with absent modular extension system (`nwidart
 | **Execution Flow** | User clicks "Add to Cart" → `addtocart($id)` → store course_id in session array → redirect to cart page → display cart items → proceed to checkout. |
 | **Duplicate Prevention** | Checks if course already in cart or already purchased. |
 | **Side Effects** | Session manipulation only. No persistent cart for web users. |
-| **Risks** | Cart lost on session expiry. No cart merge on login. Race condition if same course added from multiple tabs. |
+| **Risks** | Session-backed cart storage is documented in cited code. Cart loss on expiry, login-merge behavior, and concurrent-update outcomes are DERIVED; runtime behavior is UNKNOWN. |
 
 ### CAP-007 · Checkout & Order Creation
 
@@ -277,7 +279,7 @@ Monolithic Laravel 10 application with absent modular extension system (`nwidart
 | **DB Tables** | `wallets` (user_id, balance), `add_on_wallets` (type, amount, user_id, order_id) |
 | **Execution Flow** | Add balance: User → select amount → pay via gateway → credit wallet. Purchase: checkout with wallet → verify sufficient balance → deduct → create order. |
 | **State Transitions** | Wallet balance increases on recharge, decreases on purchase, increases on refund. |
-| **Risks** | No pessimistic locking on balance update — race condition on concurrent deductions. |
+| **Risks** | No pessimistic locking is documented for the cited balance-update path. Concurrent-deduction race risk is DERIVED; runtime outcome is UNKNOWN. |
 
 ### CAP-011 · Instructor Payout System
 
@@ -364,7 +366,7 @@ Monolithic Laravel 10 application with absent modular extension system (`nwidart
 | **Controllers** | `BundleCourseController` — methods: `addtocart`, `detailpage`, `enroll`. Admin CRUD via resource routes. |
 | **Models** | `BundleCourse` |
 | **DB Tables** | `bundle_courses` (title, slug, price, discount_price, course_id JSON array, user_id, status, featured) |
-| **Execution Flow** | Admin creates bundle → selects courses → sets price → publish. User buys bundle → all courses enrolled at once. |
+| **Execution Flow** | Cited routes/controllers describe bundle creation, pricing, and enrollment handling. All-course enrollment after purchase is DERIVED; runtime enrollment outcome is UNKNOWN. |
 
 ### CAP-018 · Wishlist
 
@@ -410,7 +412,7 @@ Monolithic Laravel 10 application with absent modular extension system (`nwidart
 | **Controllers** | `RefundCourseController` — CRUD + `refundview`, `refundpolicy`. `OrderController@refundview`, `OrderController@refundrequest` |
 | **Models** | `RefundCourse`, `RefundPolicy` |
 | **DB Tables** | `refund_courses` (user_id, course_id, order_id, reason, status, amount), `refund_policies` |
-| **Execution Flow** | User requests refund → admin reviews → approve/reject → if approved: credit to wallet or original method → update order status. |
+| **Execution Flow** | Cited routes/controllers describe refund request, review, and approval/rejection handling. Wallet/original-method credit and persisted order-status outcomes are UNKNOWN. |
 | **State Transitions** | `refund.status`: pending → approved/rejected |
 
 ### CAP-022 · Blog / CMS
@@ -454,7 +456,7 @@ Monolithic Laravel 10 application with absent modular extension system (`nwidart
 | **Entry Points** | `web.php:1137` (free), `web.php:162` (admin enroll) |
 | **Controllers** | `EnrollmentController` — methods: `freeenroll`, `enrolluser` |
 | **Models** | `Order` (enrollment = order with price 0) |
-| **Execution Flow** | Free course: user clicks "Enroll" → create Order with `total_amount=0`, `payment_method='free'` → enrolled. Admin: select user + course → create Order → enrolled. |
+| **Execution Flow** | Cited `freeenroll` and `enrolluser` paths describe Order creation with free/admin enrollment inputs. Order persistence and resulting enrollment are UNKNOWN. |
 
 ### CAP-026 · Affiliate / Referral System
 
@@ -467,7 +469,7 @@ Monolithic Laravel 10 application with absent modular extension system (`nwidart
 | **DB Tables** | `affiliates` (user_id, referral_code, points, earnings), `affiliate_histories` |
 | **Middleware** | `CheckReferral` — reads referral cookie on registration |
 | **Job** | `AffiliatesPoints` — dispatched from `OrderStoreController` on purchase |
-| **Execution Flow** | User shares referral link → new user registers with referral cookie → on purchase by referee, referrer gets points/commission via `AffiliatesPoints` job. |
+| **Execution Flow** | Cited middleware reads a referral cookie and cited purchase path dispatches `AffiliatesPoints`. Point/commission award is DERIVED; queue execution and result are UNKNOWN. |
 
 ### CAP-027 · Notification System
 
@@ -684,7 +686,7 @@ Monolithic Laravel 10 application with absent modular extension system (`nwidart
 | **Purpose** | Purchase course for another user |
 | **Entry Points** | `CheckoutController` (gift option) |
 | **Mail** | `GiftOrder` sent to recipient |
-| **Execution Flow** | Buyer selects gift → enters recipient email → checkout → order created with `gift_to` field → recipient gets email with enrollment link |
+| **Execution Flow** | Cited gift option and `GiftOrder` mail reference describe gift checkout handling. Order persistence, mail delivery, enrollment-link behavior, and recipient access outcome are UNKNOWN. |
 
 ### CAP-047 · Course Instalment Payment
 
@@ -825,7 +827,7 @@ Monolithic Laravel 10 application with absent modular extension system (`nwidart
 |---|---|
 | **Purpose** | Automated database backup |
 | **Entry Points** | CLI command `DatabaseBackUp` |
-| **Implementation** | Run mysqldump → save to storage |
+| **Implementation** | Cited command code invokes `mysqldump` and writes backup output to storage. Binary availability, execution, output validity, and recovery usefulness are UNKNOWN. |
 
 ### CAP-062 · Demo Mode / Demo Reset
 
@@ -833,7 +835,7 @@ Monolithic Laravel 10 application with absent modular extension system (`nwidart
 |---|---|
 | **Purpose** | Reset demo environment |
 | **Entry Points** | CLI commands `DemoReset`, `ImportDemo` |
-| **Implementation** | Truncate tables → re-import demo SQL |
+| **Implementation** | Cited commands include table-truncate and demo-SQL import operations. Execution environment, resulting database state, and deployment effect are UNKNOWN. |
 
 ### CAP-063 · Installer / Setup Wizard
 
@@ -842,7 +844,7 @@ Monolithic Laravel 10 application with absent modular extension system (`nwidart
 | **Purpose** | First-time installation wizard |
 | **Entry Points** | `web.php:78-81` |
 | **Controllers** | `InstallerController` |
-| **Middleware** | `IsInstalled` — redirects to installer if not completed |
+| **Middleware** | Cited `IsInstalled` middleware contains installer redirection logic. Installation completion and deployed runtime behavior are UNKNOWN. |
 
 ### CAP-064 · OTA Updates
 
@@ -851,7 +853,7 @@ Monolithic Laravel 10 application with absent modular extension system (`nwidart
 | **Purpose** | Over-the-air updates |
 | **Entry Points** | `web.php:95-98` |
 | **Controllers** | `OtaUpdateController` |
-| **Risks** | No code signing. Updates can overwrite custom code. |
+| **Risks** | Absence of code-signing checks is limited to cited OTA paths. Overwrite/custom-code impact is DERIVED; update execution, rollback, and production effect are UNKNOWN. |
 
 ### CAP-065 · Purchase Code Validation
 
@@ -1688,12 +1690,12 @@ This section documents capabilities, execution paths, and system behaviors disco
 | **Entry Points** | `web.php:1043-1044`; `GiftCourseController@giftview`, `@giftcheckout` |
 | **Controllers** | `GiftCourseController` |
 | **Models** | `Course`, `User` |
-| **Execution Flow** | View gift page for course → enter recipient email, name → system checks if user exists → if not, creates user with default password `123456` and auto-verifies email → stores course ID and user ID in session (`one_order_course`, `one_order_user`) → redirects to standard checkout → `OrderStoreController` detects session keys and creates order for that user instead of authenticated user |
-| **Side Effects** | Creates new User record if email not found. Auto-verifies email (`email_verified_at` set). Mail: `Mail\GiftOrder` exists but usage not confirmed. |
-| **State** | VERIFIED |
-| **Reachability** | REACHABLE (web route, no middleware restriction) |
+| **Execution Flow** | Cited controller path checks recipient email, conditionally constructs a user with default password `123456` and `email_verified_at`, stores session keys, and redirects to checkout. User/order persistence, checkout execution, and resulting account state are UNKNOWN. |
+| **Side Effects** | Cited code assigns fields for a conditional User creation and auto-verification. Persistence outcome is UNKNOWN. `Mail\GiftOrder` exists but usage is not confirmed. |
+| **State** | VERIFIED — cited controller/path observation only |
+| **Reachability** | Cited web-route entry point; deployed registration, middleware coverage, and runtime reachability are UNKNOWN |
 | **Evidence** | `app/Http/Controllers/GiftCourseController.php:1-94` |
-| **Risks** | Auto-creates users with weak default password. No confirmation flow visible. |
+| **Risks** | Default password assignment in cited code is VERIFIED; weak-password security risk is DERIVED. Confirmation behavior and resulting account-access outcome are UNKNOWN. |
 
 ### CAP-072 · Course Refund Processing
 
@@ -1704,9 +1706,9 @@ This section documents capabilities, execution paths, and system behaviors disco
 | **Controllers** | `RefundController` |
 | **Models** | `RefundCourse`, `Order` |
 | **DB Tables** | `refund_courses` |
-| **Execution Flow** | Admin views refund request → admin approves → system calls gateway-specific refund method (PayPal, Stripe, Paystack, Instamojo, PayTM, RazorPay, BankTransfer) → gateway processes refund → status updated |
-| **State** | VERIFIED |
-| **Reachability** | REACHABLE (admin-only) |
+| **Execution Flow** | Cited controller path includes refund-request review and gateway-specific refund method calls. Gateway processing, persisted status, and refund completion are UNKNOWN. |
+| **State** | VERIFIED — cited controller/path observation only |
+| **Reachability** | Cited admin entry point; deployed authorization enforcement and runtime reachability are UNKNOWN |
 | **Evidence** | `app/Http/Controllers/RefundController.php:1-100+`, `app/RefundCourse.php:1-27` |
 
 ### CAP-073 · Admin Bulk Delete Operations
@@ -1715,12 +1717,12 @@ This section documents capabilities, execution paths, and system behaviors disco
 |---|---|
 | **Purpose** | Delete multiple records at once via checkboxes |
 | **Controllers** | `BulkdeleteController`, plus ~30+ controllers with `bulk_delete` methods |
-| **Execution Flow** | Admin selects checkboxes → submits form → validates `checked[]` array → `Model::whereIn('id', $request->checked)->delete()` → redirects |
+| **Observed static path** | Cited `BulkdeleteController` path validates `checked[]` and calls `Model::whereIn('id', $request->checked)->delete()` before redirecting. Broader controller list and actual request execution are not independently revalidated here. |
 | **Scope** | Sliders, Testimonials, Ads, Countries, Cities, Meetings, Instructors, Users, Courses, Blogs, Categories, Assignments, Support Tickets, Reports |
-| **State** | VERIFIED |
-| **Reachability** | REACHABLE (admin routes) |
+| **State** | VERIFIED — cited controller/path observation only |
+| **Reachability** | Cited admin-route entry point; deployed route registration, authorization enforcement, and runtime reachability are UNKNOWN |
 | **Evidence** | `app/Http/Controllers/BulkdeleteController.php:1-380` |
-| **Risks** | Hard delete. No cascade handling. No transaction wrapper. |
+| **Risks** | Bulk deletion through cited path is VERIFIED. Lack of a transaction wrapper in that cited path is VERIFIED. Partial-operation, cascade, referential-integrity, and actual deletion outcomes are DERIVED or UNKNOWN; current evidence does not establish absent cascade behavior. |
 
 ### CAP-074 · Over-The-Air (OTA) Update System
 
@@ -1729,11 +1731,11 @@ This section documents capabilities, execution paths, and system behaviors disco
 | **Purpose** | Remote application updates via web interface — downloads package, extracts, runs migrations |
 | **Entry Points** | Admin; `OtaUpdateController@getotaview`, `@update`, `@checkforupate`, `@mergeQuickupdate` |
 | **Controllers** | `OtaUpdateController` |
-| **Execution Flow** | Check GitHub for updates → download ZIP → extract to base path → run migrations → update version file |
-| **State** | VERIFIED |
-| **Reachability** | REACHABLE (admin-only) |
+| **Execution Flow** | Cited controller code includes update-check, ZIP download/extraction, migration, and version-file operations. Network, filesystem, migration, and update outcomes are UNKNOWN. |
+| **State** | VERIFIED — cited controller/path observation only |
+| **Reachability** | Cited admin entry point; deployed authorization enforcement and runtime reachability are UNKNOWN |
 | **Evidence** | `app/Http/Controllers/OtaUpdateController.php:1-439` |
-| **Risks** | No signature verification. No rollback. Extracts over live app. Localhost bypass license check. |
+| **Risks** | Absence of signature-verification and rollback handling is limited to cited OTA paths. Live-app overwrite, license-bypass, and production-update impact are DERIVED; execution outcome is UNKNOWN. |
 
 ### CAP-075 · Demo Reset Command
 
@@ -1742,11 +1744,11 @@ This section documents capabilities, execution paths, and system behaviors disco
 | **Purpose** | CLI command to reset application to demo state |
 | **Entry Points** | `php artisan demo:reset` |
 | **Controllers** | `app/Console/Commands/DemoReset.php` |
-| **Execution Flow** | Truncates 23+ tables → deletes files in `public/images/*` and `public/video/class/*` → deletes session files |
-| **State** | VERIFIED |
-| **Reachability** | REACHABLE (CLI, no auth check) |
+| **Observed static path** | Cited command code includes documented truncate calls, including `users`, plus file and session deletion operations. Exact execution sequence, affected deployed data, and resulting database state are UNKNOWN. |
+| **State** | VERIFIED — command signature and cited static operations exist |
+| **Reachability** | CLI invocation is documented by command signature. Environment availability, command registration in deployment, authorization/host access, and actual execution are UNKNOWN. |
 | **Evidence** | `app/Console/Commands/DemoReset.php:1-320` |
-| **Risks** | DESTRUCTIVE. No confirmation. No backup. Truncates `users` table. |
+| **Risks** | Cited truncate and deletion operations create a DERIVED destructive-data risk if executed against populated data. Confirmation behavior, backup availability, recovery behavior, environment protection, production exposure, loss scope, and actual data-loss outcome are UNKNOWN. |
 
 ### CAP-076 · Database Backup Command
 
@@ -1755,11 +1757,11 @@ This section documents capabilities, execution paths, and system behaviors disco
 | **Purpose** | CLI command to create database backup via mysqldump |
 | **Entry Points** | `php artisan database:backup` |
 | **Controllers** | `app/Console/Commands/DatabaseBackUp.php` |
-| **Execution Flow** | Creates `storage/app/backup/` → runs `mysqldump` → saves to `backup.sql` |
-| **State** | VERIFIED |
-| **Reachability** | REACHABLE (CLI) |
+| **Execution Flow** | Cited command code creates backup storage, invokes `mysqldump`, and targets `backup.sql`. Binary availability, command execution, output validity, and recovery outcome are UNKNOWN. |
+| **State** | VERIFIED — command/signature and cited static operations exist |
+| **Reachability** | CLI invocation is documented by command signature; deployment availability and actual execution are UNKNOWN |
 | **Evidence** | `app/Console/Commands/DatabaseBackUp.php:1-60` |
-| **Risks** | Backup file overwritten each time. No timestamping. |
+| **Risks** | Cited output target is `backup.sql`; overwrite and timestamping outcomes are DERIVED. Backup retention and recovery usefulness are UNKNOWN. |
 
 ### CAP-077 · Demo Content Import
 
@@ -1768,11 +1770,11 @@ This section documents capabilities, execution paths, and system behaviors disco
 | **Purpose** | Import demo courses, categories, blogs from seeders and extract demo images/videos from ZIP |
 | **Entry Points** | `php artisan import:demo` |
 | **Controllers** | `app/Console/Commands/ImportDemo.php` |
-| **Execution Flow** | Truncates Cart, Wishlist, Order tables → runs 12+ seeders → extracts `public/democontent.zip` → deletes session files |
-| **State** | VERIFIED |
-| **Reachability** | REACHABLE (CLI) |
+| **Execution Flow** | Cited command code includes documented truncate, seeder, archive-extraction, and session-deletion operations. Path validation, execution, deployment state, and resulting data outcome are UNKNOWN. |
+| **State** | VERIFIED — command/signature and cited static operations exist |
+| **Reachability** | CLI invocation is documented by command signature; deployment availability and actual execution are UNKNOWN |
 | **Evidence** | `app/Console/Commands/ImportDemo.php:1-119` |
-| **Risks** | Truncates active orders. Extracts without path validation. |
+| **Risks** | Cited truncate and extraction operations create DERIVED data-loss and path-handling risks if executed. Actual affected records, archive handling outcome, and deployment impact are UNKNOWN. |
 
 ### CAP-078 · Payment Webhooks (Limited)
 
@@ -1794,9 +1796,9 @@ This section documents capabilities, execution paths, and system behaviors disco
 | **Purpose** | Enable gradual content release for courses based on schedule |
 | **Entry Points** | Course create/edit forms; `CourseController@store`, `@update` |
 | **Models** | `Course` (columns: `drip_enable` boolean, `duration_type` enum) |
-| **Execution Flow** | Instructor enables drip content → sets `drip_enable = 1` → system uses `duration_type` (days or months) to control visibility |
+| **Execution Flow** | Cited create/update paths set `drip_enable` and `duration_type`. Visibility control and scheduled-release behavior are UNKNOWN. |
 | **State** | DERIVED (flag exists, enforcement logic not traced) |
-| **Reachability** | REACHABLE (flag can be set) |
+| **Reachability** | Cited create/update paths set the flag; deployed route access and runtime effect are UNKNOWN |
 | **Evidence** | `app/Course.php:32` (fillable); `CourseController.php:274,419`; `Api/InstructorApiController.php:1102,1265` |
 | **Enforcement** | Lesson-hiding logic NOT FOUND in controllers. May be in views or JavaScript. Runtime behavior UNVERIFIED. |
 
@@ -1809,9 +1811,9 @@ This section documents capabilities, execution paths, and system behaviors disco
 | **Controllers** | `OrderStoreController` |
 | **Models** | `PaidMettings`, `Meeting`, `BBL`, `JitsiMeeting`, `Googlemeet` |
 | **DB Tables** | `paid_mettings` |
-| **Execution Flow** | User initiates payment → session stores meeting details → payment callback → creates `PaidMettings` record → clears session |
-| **State** | VERIFIED |
-| **Reachability** | REACHABLE |
+| **Execution Flow** | Cited `OrderStoreController` path handles meeting session details and includes `PaidMettings` creation. Payment callback, persistence, and access outcomes are UNKNOWN. |
+| **State** | VERIFIED — cited controller/path observation only |
+| **Reachability** | Cited controller entry point; deployed route availability and runtime reachability are UNKNOWN |
 | **Evidence** | `app/Http/Controllers/OrderStoreController.php:61-105` |
 
 ### CAP-081 · Quiz Result Reporting & Re-attempt
@@ -1822,11 +1824,11 @@ This section documents capabilities, execution paths, and system behaviors disco
 | **Entry Points** | `QuizStartController@show`, `@tryagain`, `@sub_show`, `@subtryagain` |
 | **Controllers** | `QuizStartController`, `QuizTopicController` |
 | **Models** | `QuizTopic`, `QuizAnswer`, `Quiz` |
-| **Execution Flow** | Student completes quiz → system calculates score → displays result → student can delete answers and retake → percentage stored in `users.exam_percentage` |
-| **State** | VERIFIED |
-| **Reachability** | REACHABLE |
+| **Execution Flow** | Cited quiz-controller methods include result, re-attempt, answer-deletion, and percentage-handling paths. Score calculation, persistence, and re-attempt outcome are UNKNOWN. |
+| **State** | VERIFIED — cited controller/path observation only |
+| **Reachability** | Cited controller entry points; deployed route availability and runtime reachability are UNKNOWN |
 | **Evidence** | `app/Http/Controllers/QuizStartController.php:48-78,131-135` |
-| **Limitation** | No attempt limit. Re-attempt deletes history. Subjective answers need manual approval. |
+| **Limitation** | Attempt-limit, history-deletion, and subjective-answer approval behavior are limited to cited paths; runtime enforcement is UNKNOWN. |
 
 ### CAP-082 · Module Dependency Checks
 
@@ -1846,8 +1848,8 @@ This section documents capabilities, execution paths, and system behaviors disco
 |---|---|
 | **Purpose** | Allow users to switch site language; store preference in session |
 | **Middleware** | `app/Http/Middleware/SwitchLanguage.php` |
-| **State** | VERIFIED |
-| **Reachability** | REACHABLE |
+| **State** | VERIFIED — cited middleware observation only |
+| **Reachability** | Middleware presence is cited; deployed registration and runtime language-switch outcome are UNKNOWN |
 | **Evidence** | `app/Http/Middleware/SwitchLanguage.php:40` |
 
 ### CAP-084 · Admin Financial Reports
@@ -1857,7 +1859,7 @@ This section documents capabilities, execution paths, and system behaviors disco
 | **Purpose** | Generate revenue reports for admin and per-instructor |
 | **Entry Points** | `web.php:459-460`; `RevenueReportController@report`, `@instructorReport` |
 | **State** | DERIVED |
-| **Reachability** | REACHABLE (admin-only) |
+| **Reachability** | Cited admin route/controller entry points; deployed authorization enforcement, report accuracy, and runtime reachability are UNKNOWN |
 | **Evidence** | `routes/web.php:459-460,733-734` |
 
 ### CAP-085 · Course Progress Tracking
@@ -1867,8 +1869,8 @@ This section documents capabilities, execution paths, and system behaviors disco
 | **Purpose** | Track which chapters/lessons user completed; generate progress reports |
 | **Entry Points** | `web.php:796-797`; `CourseProgressController@progressreport`, `@progressview` |
 | **Models** | `CourseProgress` |
-| **State** | VERIFIED |
-| **Reachability** | REACHABLE |
+| **State** | VERIFIED — cited routes/query observation only |
+| **Reachability** | Cited route/controller entry points; deployed authorization enforcement, progress persistence, and runtime reachability are UNKNOWN |
 | **Evidence** | `routes/web.php:796-797`; `CertificateController` queries `course_progress` |
 
 ### CAP-086 · IP Blocking
@@ -1878,7 +1880,7 @@ This section documents capabilities, execution paths, and system behaviors disco
 | **Purpose** | Block specific IP addresses from accessing the site |
 | **Middleware** | `ip_block` |
 | **State** | DERIVED |
-| **Reachability** | REACHABLE |
+| **Reachability** | Middleware registration/use is cited; route coverage and runtime blocking outcome are UNKNOWN |
 | **Evidence** | Middleware in `app/Http/Kernel.php`; used in `api.php:29` |
 
 ### CAP-087 · Maintenance Mode
@@ -1888,7 +1890,7 @@ This section documents capabilities, execution paths, and system behaviors disco
 | **Purpose** | Disable site access for non-admins during maintenance |
 | **Middleware** | `maintanance_mode` |
 | **State** | DERIVED |
-| **Reachability** | REACHABLE |
+| **Reachability** | Middleware presence is cited; deployment activation, route coverage, and runtime access effect are UNKNOWN |
 | **Evidence** | Middleware in `app/Http/Kernel.php` |
 
 ### CAP-088 · Admin Impersonation
@@ -1897,9 +1899,9 @@ This section documents capabilities, execution paths, and system behaviors disco
 |---|---|
 | **Purpose** | Admin can login as any user to see their view |
 | **Entry Points** | `AlluserController@login` |
-| **State** | VERIFIED (first pass) |
-| **Reachability** | REACHABLE (admin-only) |
-| **Risks** | No confirmation. No audit log. |
+| **State** | VERIFIED — cited controller entry-point observation only |
+| **Reachability** | Cited admin-related entry point; deployed authorization enforcement and runtime reachability are UNKNOWN |
+| **Risks** | Confirmation behavior and audit logging are UNKNOWN. Impersonation-access risk is DERIVED if cited path executes. |
 
 ---
 
@@ -2100,7 +2102,7 @@ The insmart LMS is a **feature-rich, monolithic Laravel 10 application** designe
 5. **Credentials/settings** — configuration is read from `settings` in cited code (`VERIFIED`); encryption, access, and exposure are `UNKNOWN`.
 6. **Zero foreign keys** — referential integrity entirely application-level, orphaned records possible.
 7. **No tests** — no way to verify behavior changes.
-8. **Destructive CLI commands** — `demo:reset` truncates all tables including users, no confirmation.
+8. **Destructive CLI command risk** — cited `demo:reset` code includes truncate calls, including `users`, and documented deletion operations (`VERIFIED`). If executed against populated data, these operations create a `DERIVED` destructive-data risk. Confirmation behavior, backup and recovery availability, deployment exposure, actual execution, and resulting data-loss scope remain `UNKNOWN`.
 9. **OTA update risks** — controller/configuration evidence supports a `DERIVED` update risk; signature, rollback, and production execution outcomes are `UNKNOWN`.
 10. **Policies** — 23 policy files and empty `$policies` map are recorded (`VERIFIED`); route/policy effect is `UNKNOWN`.
 
