@@ -38,7 +38,7 @@ No completion claim is made for source-wide capability verification, runtime beh
 - Added standalone headings for Entry Point Inventory, Detailed Capability Analysis, Candidate Feature Grouping, Candidate Feature Detailed Analysis, Cross-Feature Relationships, Unmapped Components, Dead/Broken/Inconsistent Inventory, Unknown Inventory, Second Discovery Pass, Final Coverage Audit, and Final Product Decision Boundary.
 - Removed duplicate/out-of-order section headings and duplicate Section 14 heading.
 - Kept exact Product Decision Boundary statement as final artifact text.
-- Marked candidate detailed analysis and final coverage audit as partial where inherited records lack required evidence or fields.
+- Recorded candidate required fields from existing evidence and explicit `UNKNOWN` values; final coverage audit remains PARTIAL because inherited evidence sufficiency and source-wide verification are unresolved.
 
 ## Source Checks Performed at Verified Commit
 

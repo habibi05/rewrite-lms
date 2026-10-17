@@ -1063,22 +1063,22 @@ if (Auth::user()->role != 'user') {
 
 ### CAP-075 · Demo Reset Command — Deep Analysis
 
-**Classification:** VERIFIED (command exists) + DESTRUCTIVE
+**Classification:** VERIFIED (command/signature and cited truncate calls) + DERIVED (destructive-data risk) + UNKNOWN (execution environment, backup, and recovery behavior)
 
 **Direct Evidence:**
 - Command: `app/Console/Commands/DemoReset.php`
 - Signature: `demo:reset`
 
-**Execution Path:** Disables FK checks → Truncates 50+ tables including `users` → Re-enables FK checks → Seeds demo data
+**Observed static path:** Cited command code disables FK checks, calls `truncate()` on records including `users`, re-enables FK checks, and seeds demo data. Actual command execution and resulting database state are UNKNOWN.
 
 **CRITICAL OBSERVATIONS:**
-1. Truncates USERS table → Admin accounts deleted, cannot log back in
-2. No confirmation prompt
-3. No backup before truncate
-4. Present in production codebase
-5. Disables FK checks → referential integrity bypassed
+1. Cited code includes `users` among truncate targets (VERIFIED); account availability after execution is UNKNOWN.
+2. Confirmation behavior is not established by current cited evidence; UNKNOWN.
+3. Backup and recovery behavior are UNKNOWN.
+4. Command exists in inspected repository (VERIFIED); production deployment and availability are UNKNOWN.
+5. Cited path disables FK checks (VERIFIED); resulting integrity effects are DERIVED.
 
-**Impact:** One wrong command = complete data loss with no recovery.
+**Derived risk:** If executed against a populated target database, cited truncation calls can remove data. Scope of loss, backup availability, recovery, environment protection, and operational exposure are UNKNOWN.
 
 **Unknown:** Whether command includes environment check to prevent execution in production.
 
@@ -1086,7 +1086,7 @@ if (Auth::user()->role != 'user') {
 
 ## 6. Candidate Feature Grouping
 
-The following inherited candidate labels preserve `CAND-001`–`CAND-014`. They are **DERIVED** groupings from prior static analysis, not product decisions. Detailed required-field evidence remains incomplete; Section 7 records this limitation.
+The following inherited candidate labels preserve `CAND-001`–`CAND-014`. They are **DERIVED** groupings from prior static analysis, not product decisions. Required candidate fields are recorded in the Section 6 evidence contract and Section 7; evidence sufficiency, route coverage, and LOW-confidence boundaries remain unresolved.
 
 ### Candidate evidence contract and scope
 
@@ -1525,7 +1525,7 @@ Components discovered but not confidently mapped to a capability or candidate fe
 
 **Evidence:** `app/Console/Kernel.php` schedule method is empty (lines commented out)
 
-**Observation:** No automated tasks configured. Commands exist (`database:backup`, `sitemap:generate`) but not scheduled.
+**Observation:** Cited `Kernel::schedule()` body is empty/commented (VERIFIED). No in-application schedule registration is evidenced; actual scheduler invocation, external scheduling, and task execution are UNKNOWN.
 
 **Unknown:** Whether tasks are intended to be scheduled manually or if scheduling was never implemented.
 
@@ -1535,14 +1535,14 @@ Components discovered but not confidently mapped to a capability or candidate fe
 
 ### BROKEN Components
 
+| Component | Type | Evidence | Evidence-scoped status |
+|---|---|---|---|
 | **Queue Jobs (3)** | Job | `AffiliatesPoints.php`, `EnrollExpire.php`, `InstructorPlan.php` directly use `Auth::user()` | Queue-worker failure risk is DERIVED; actual execution and outcome UNKNOWN |
 | **Module Dependencies (19)** | Module | `modules_statuses.json` lists 19 active modules; `Modules/` directory absent | Cited module references have missing-source risk in this snapshot; exact feature/runtime effect UNKNOWN |
 | **Certificate Generation** | Feature | References `Modules\\Certificate\\Entities\\CertificateDesign` | Missing dependency risk DERIVED; exception/runtime outcome UNKNOWN |
 | **Ebook System** | Feature | References `Modules\\Ebook\\Entities\\Ebook` | Missing dependency risk DERIVED; exception/runtime outcome UNKNOWN |
 | **Homework Submission** | Feature | Depends on `Modules\\Homework` reference | Missing dependency risk DERIVED; exception/runtime outcome UNKNOWN |
 | **Forum** | Feature | Routes reference `Modules\\Forum\\Http\\Controllers` | Missing dependency risk DERIVED; route/module runtime outcome UNKNOWN |
-| **Homework Submission** | Feature | Depends on `Modules\Homework` | Non-functional — class not found exception |
-| **Forum** | Feature | Routes reference `Modules\Forum\Http\Controllers` | Non-functional — class not found exception |
 
 ---
 
@@ -1551,9 +1551,9 @@ Components discovered but not confidently mapped to a capability or candidate fe
 | Component | Type | Evidence | Reason |
 |---|---|---|---|
 | **Policy Authorization** | Authorization | 23 policy files in `app/Policies/`, `AuthServiceProvider::$policies` empty | Registration state VERIFIED; effect on each policy check UNKNOWN |
-| **Scheduled Tasks** | Automation | Commands exist, `Kernel::schedule()` method empty | Never executed automatically |
-| **CLI Commands (3)** | Command | `PurchaseFile`, `SendMail`, `Unsubscribe` not registered in Kernel | Cannot be called via artisan |
-| **License Tracking** | Utility | `Tracker.php:track()` method commented out | Never executes |
+| **Scheduled Tasks** | Automation | `Kernel::schedule()` method body recorded empty/commented | No in-application schedule registration evidenced (VERIFIED); external scheduler/task execution UNKNOWN |
+| **CLI Commands (3)** | Command | `PurchaseFile`, `SendMail`, `Unsubscribe` recorded as not registered in cited Kernel configuration | Artisan registration/reachability at runtime is UNKNOWN; lack of cited registration is VERIFIED |
+| **License Tracking** | Utility | `Tracker.php:track()` method recorded commented out | Commented code is not active in inspected file (VERIFIED); alternate invocation/deployment behavior UNKNOWN |
 | **Module Routes** | Routes | Module route definitions referenced | Registered-controller availability and reachability UNKNOWN |
 
 ---
@@ -1941,24 +1941,24 @@ Evidence: `grep -rn 'foreign(' database/migrations/` returned no results. 203 mi
 
 ## 13. Final Coverage Audit
 
-This section verifies the completeness and quality of the forensic inventory.
+This section records inherited inspection/coverage statements and their evidence limits. Section presence or count metadata does not establish evidence completeness or source-wide verification.
 
 ### Repository Coverage
 
 | Component Type | Inspection Status | Evidence | Completeness |
 |---|---|---|---|
-| **Route definitions (web)** | ✅ COMPLETE | `routes/web.php` (1,156 lines) inspected, ~350+ routes documented | All major route groups traced |
-| **API routes** | ✅ COMPLETE | `routes/api.php` (505 lines) inspected, ~120+ routes documented | All API endpoints traced |
-| **Controllers** | ✅ COMPLETE | 238 controllers inspected, primary methods documented in capabilities | Main flows traced |
-| **Models/Entities** | ✅ COMPLETE | 131 models inspected, relationships documented | Core models traced |
-| **Services** | ⚠️ PARTIAL | 2 service files inspected | Service layer minimal |
-| **Database schema** | ✅ COMPLETE | 203 migration files counted, ~60+ core tables documented | Major tables documented |
-| **Views/Frontend** | ⚠️ PARTIAL | 695 Blade views counted, not individually inspected | View-layer logic not traced |
-| **Authorization** | ✅ COMPLETE | Middleware, policies, RBAC systems documented | Dual system inconsistency noted |
-| **Jobs/Events/Listeners** | ✅ COMPLETE | 3 jobs (BROKEN), 1 listener, 5 notifications, 10 mail classes | All components traced |
-| **Integrations** | ✅ COMPLETE | 19 payment gateways, 3 live class platforms, 6 social logins | Major integrations traced |
-| **Commands** | ✅ COMPLETE | 7 CLI commands documented | All commands traced |
-| **Tests** | ✅ COMPLETE | No automated tests exist | N/A |
+| **Route definitions (web)** | ⚠️ PARTIAL | `routes/web.php` count/inspection statement is inherited metadata | Entry points documented selectively; source-wide traceability not established |
+| **API routes** | ⚠️ PARTIAL | `routes/api.php` count/inspection statement is inherited metadata | Endpoint coverage and middleware behavior not source-wide verified |
+| **Controllers** | ⚠️ PARTIAL | 238-controller statement is inherited count metadata | Material flows cited; all controller methods not revalidated |
+| **Models/Entities** | ⚠️ PARTIAL | 131-model statement is inherited count metadata | Core records documented; source-wide relationship verification not established |
+| **Services** | ⚠️ PARTIAL | 2-service statement is inherited count metadata | Service-layer completeness UNKNOWN |
+| **Database schema** | ⚠️ PARTIAL | 203-migration/~60-table statement is inherited count metadata | Listed tables/relationships not source-wide revalidated |
+| **Views/Frontend** | ⚠️ PARTIAL | 695-view statement is inherited count metadata | View-layer logic not traced |
+| **Authorization** | ⚠️ PARTIAL | Middleware/policy/RBAC references documented | Route-by-route enforcement UNKNOWN |
+| **Jobs/Events/Listeners** | ⚠️ PARTIAL | Component counts are inherited metadata | Queue/event/listener runtime and exhaustive coverage UNKNOWN |
+| **Integrations** | ⚠️ PARTIAL | Provider counts are inherited metadata | Gateway/provider behavior and full inventory UNKNOWN |
+| **Commands** | ⚠️ PARTIAL | Command count is inherited metadata | Registration, reachability, and execution coverage UNKNOWN |
+| **Tests** | ⚠️ PARTIAL | Inherited record says no automated tests beyond scaffolds | Test inventory and behavior coverage not independently verified |
 
 **Coverage status:** PARTIAL. Counts and prior inventory claims require item-by-item source revalidation; views/frontend are not fully traced.
 
@@ -1966,14 +1966,14 @@ This section verifies the completeness and quality of the forensic inventory.
 
 ### Evidence Quality Statement
 
-✅ **File paths provided** — All 88 capabilities reference specific files  
-✅ **Line numbers provided** — Many entries include line references  
-✅ **Route names traced** — Entry points mapped to route definitions  
-✅ **Controller methods named** — Specific methods listed  
-✅ **Model relationships documented** — Database schema includes relationships  
-✅ **Classification labels used** — VERIFIED, DERIVED, BROKEN, UNREACHABLE, UNKNOWN applied  
-✅ **Unknowns explicitly listed** — Section 11 consolidates 50+ unknown questions  
-✅ **Static analysis limitations noted** — Runtime behavior marked UNKNOWN when not provable  
+⚠️ **File paths provided** — many records cite paths; all 88 records are not individually revalidated
+⚠️ **Line numbers provided** — many entries include inherited line references; precision varies
+⚠️ **Route names traced** — selected entry points mapped; complete route coverage not established
+⚠️ **Controller methods named** — selected methods listed; source-wide method coverage not established
+⚠️ **Model relationships documented** — listed relationships are inherited evidence, not full schema verification
+⚠️ **Classification labels used** — reconciliation normalized material claims; classifications are not systematic for every inherited record
+⚠️ **Unknowns explicitly listed** — Section 11 is a partial consolidated inventory, not proof all unknowns were found
+⚠️ **Static analysis limitations noted** — runtime behavior remains UNKNOWN unless current evidence proves it
 
 ⚠️ **Some line ranges imprecise** — Some entries reference large file segments  
 ⚠️ **View-layer behavior not traced** — Client-side validation, AJAX not inventoried  
@@ -1983,10 +1983,8 @@ This section verifies the completeness and quality of the forensic inventory.
 
 ### Discovery Process Verification
 
-✅ **No predefined taxonomy imposed** — Capability discovery from routes → controllers → models  
-✅ **Features emerged after capabilities** — 88 capabilities first, then grouped into 14 candidates  
-✅ **Evidence-based boundaries** — Grouping by shared tables, controllers, execution flows  
-✅ **Uncertain boundaries marked** — Section 9 (Unmapped), Section 11 (Unknown) list unresolved items  
+⚠️ **Discovery-process statements are inherited** — methodology and independence were not revalidated in this reconciliation.
+⚠️ **Candidate boundaries are DERIVED** — Section 6 records LOW confidence and unresolved boundary evidence.
 
 ---
 
@@ -2007,14 +2005,14 @@ This section verifies the completeness and quality of the forensic inventory.
 
 ### Second Pass Verification
 
-✅ **Independent second discovery pass completed**
+⚠️ **Second-pass record present** — independent second-pass execution was not revalidated in this reconciliation.
 
 **First Pass:** CAP-001 to CAP-070 (70 capabilities)  
 **Second Pass:** CAP-071 to CAP-088 (18 additional capabilities)
 
 Discovered through: Console commands, queue jobs, gift flow, OTA system, refund processing, bulk operations, webhooks, drip content, module checks, admin impersonation
 
-**Evidence of Independence:** Different entry points (CLI → jobs → admin controllers), new components not found in first pass, first-pass claims verified
+**Inherited independence rationale:** Different entry points (CLI → jobs → admin controllers), new components not found in first pass, first-pass claims verified. This rationale is not proof of independent source-wide verification.
 
 ---
 
@@ -2023,19 +2021,19 @@ Discovered through: Console commands, queue jobs, gift flow, OTA system, refund 
 | Requirement | Status |
 |---|---|
 | All 14 required sections present | ⚠️ PARTIAL — headings present; candidate fields reconciled from existing evidence, broader coverage remains partial |
-| Capability inventory with IDs | ✅ COMPLETE (CAP-001 to CAP-088) |
-| Detailed capability analysis | ✅ COMPLETE (Section 5) |
+| Capability inventory with IDs | ✅ Present — CAP-001 to CAP-088 retained; evidence completeness PARTIAL |
+| Detailed capability analysis | ✅ Section 5 present; evidence completeness PARTIAL |
 | Candidate feature grouping | ⚠️ PARTIAL — CAND-001 to CAND-014 required fields recorded with explicit UNKNOWN values; boundaries remain DERIVED and LOW confidence |
-| Cross-feature relationships | ✅ COMPLETE (Section 8) |
-| Unmapped components | ✅ COMPLETE (Section 9) |
-| Dead/Broken/Inconsistent | ✅ COMPLETE (Section 10) |
-| Unknown inventory | ✅ COMPLETE (Section 11) |
-| Second discovery pass | ✅ COMPLETE (Section 12) |
-| Final coverage audit | ✅ COMPLETE (Section 13) |
-| Product decision boundary | ✅ COMPLETE (Section 14) |
-| No product recommendations | ✅ COMPLETE |
+| Cross-feature relationships | ✅ Section 8 present; evidence completeness PARTIAL |
+| Unmapped components | ✅ Section 9 present; inventory completeness PARTIAL |
+| Dead/Broken/Inconsistent | ✅ Section 10 present; classifications evidence-scoped and PARTIAL |
+| Unknown inventory | ✅ Section 11 present; unknown inventory completeness PARTIAL |
+| Second discovery pass | ✅ Section 12 present; independence/evidence completeness PARTIAL |
+| Final coverage audit | ✅ Section 13 present; source-wide verification PARTIAL |
+| Product decision boundary | ✅ Section 14 present |
+| No product recommendations | ✅ No product decisions recorded in current artifact |
 | Evidence quality | ⚠️ PARTIAL — inherited claims require revalidation |
-| Classification vocabulary | ⚠️ PARTIAL — classifications are not systematic |
+| Classification vocabulary | ⚠️ PARTIAL — material claims reconciled; classifications are not systematic across every inherited record |
 
 ---
 
