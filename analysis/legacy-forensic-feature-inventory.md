@@ -148,10 +148,10 @@ Monolithic Laravel 10 application with absent modular extension system (`nwidart
 | **Mail** | `WelcomeUser`, `SendOtp`, forgotemail (raw Blade) |
 | **Notifications** | None (mail used directly) |
 | **Social Providers** | Facebook, Google, GitLab, Amazon, LinkedIn, Twitter (configured via `SettingController:644-793`) |
-| **Execution Flow** | Register → validate → create User → optional email verify → optional OTP verify → login. Social: redirect to provider → callback → find/create user → login. 2FA: after login check → verify code → proceed. |
-| **Side Effects** | Sets `CheckReferral` cookie for affiliate tracking. Dispatches `WelcomeUser` mail. Sets session. |
-| **State Transitions** | `users.status`: 0 (inactive) → 1 (active). `users.verified`: 0 → 1. |
-| **Risks** | OTP stored in DB plaintext. Social login tokens stored in DB. No rate limiting on OTP endpoint. |
+| **Execution Flow** | Cited routes/controllers document registration, login, password-reset, verification, OTP, social-login, and 2FA entry paths (VERIFIED static inventory). User creation, verification, login, provider callback, and 2FA completion outcomes are UNKNOWN. |
+| **Side Effects** | `CheckReferral`, `WelcomeUser`, and session references are recorded in the cited static inventory (VERIFIED). Cookie/session persistence and mail dispatch or delivery outcomes are UNKNOWN. |
+| **State Transitions** | `users.status` and `users.verified` fields and listed values are static inventory facts (VERIFIED); transition persistence and resulting account state are UNKNOWN. |
+| **Risks** | OTP/plaintext storage, social-token storage, and OTP rate-limit behavior are UNKNOWN from current cited inventory. Any resulting credential-exposure or abuse risk is DERIVED. |
 
 ### CAP-002 · Role-Based Access Control (RBAC)
 
@@ -177,10 +177,10 @@ Monolithic Laravel 10 application with absent modular extension system (`nwidart
 | **Models** | `Course` (~30 relationships), `CourseChapter`, `CourseClass`, `CourseLanguage`, `CourseLevel`, `What_learn`, `RelatedCourse`, `CourseInclude`, `Requirement` |
 | **DB Tables** | `courses`, `course_chapters`, `course_classes`, `course_languages`, `course_levels`, `what_learns`, `related_courses`, `course_includes`, `requirements` |
 | **Fields on Course** | `title`, `slug`, `short_detail`, `detail`, `price`, `discount_price`, `type` (1=paid, 0=free), `status` (1=active, 0=draft), `featured`, `duration`, `preview_image`, `preview_type`, `video_url`, `drip_enable`, `certificate_enable`, `course_tags`, `level_id`, `language_id`, `category_id`, `subcategory_id`, `childcategory_id`, `user_id` (instructor), `instalment_allow` |
-| **Execution Flow** | Admin/Instructor → create course → add chapters → add classes (video/audio/document/iframe/text/SCORM) → set pricing → publish. Clone: deep copy course + chapters + classes + quizzes + relationships. |
-| **Side Effects** | Notifications sent to enrolled users on new content (`CourseNotification`). Image upload to `public/images/course/`. |
-| **State Transitions** | `status`: 0 (draft) → 1 (published). `featured`: 0 → 1. |
-| **Risks** | Content versioning, audit-trail, and upload-validation observations are limited to cited course-management paths; broader coverage, runtime enforcement, and security outcome are UNKNOWN. |
+| **Execution Flow** | Cited routes/controllers and listed course, chapter, and class records document create/edit/publish/clone/delete operation paths and listed content types (VERIFIED static inventory). Authorization, persistence, clone completeness, publication, and runtime content outcomes are UNKNOWN. |
+| **Side Effects** | `CourseNotification` and `public/images/course/` are recorded static references (VERIFIED). Notification dispatch/delivery, upload success, file validation, and resulting storage state are UNKNOWN. |
+| **State Transitions** | Listed `status` and `featured` values are static field facts (VERIFIED); actual transition persistence and resulting course visibility are UNKNOWN. |
+| **Risks** | Content versioning, audit-trail, and upload-validation observations are limited to cited course-management paths; broader coverage, runtime enforcement, and security outcome are UNKNOWN. Any resulting content-management risk is DERIVED. |
 
 
 
@@ -193,9 +193,9 @@ Monolithic Laravel 10 application with absent modular extension system (`nwidart
 | **Controllers** | `WatchController` — methods: `watch`, `watchclass`, `audioclass`, `view`, `lightbox` |
 | **Models** | `Course`, `CourseClass`, `CourseChapter`, `Order` (enrollment check) |
 | **DB Tables** | `courses`, `course_classes`, `course_chapters`, `orders` |
-| **Execution Flow** | User clicks lesson → `watch($id)` → verify enrollment (check `orders` table) → load class content → render player view. Content types: video (YouTube/Vimeo/self-hosted/AWS), audio, document (PDF), iframe, text, SCORM. |
-| **Drip Content** | If `course.drip_enable=1`, classes released on schedule. `CourseClass` has `drip_date` or drip rules checked in controller. |
-| **Side Effects** | Progress tracking via `CourseProgress` model. |
+| **Execution Flow** | Cited `WatchController` methods, routes, models, and content-type references document watch/player paths and an `Order` enrollment-check reference (VERIFIED static inventory). Enrollment enforcement, content loading/rendering, provider delivery, and access outcome are UNKNOWN. |
+| **Drip Content** | `course.drip_enable`, `CourseClass` drip references, and cited controller checks are static observations (VERIFIED). Scheduled-release enforcement and lesson visibility outcome are UNKNOWN. |
+| **Side Effects** | `CourseProgress` is a cited model reference (VERIFIED); progress creation, persistence, and resulting learner state are UNKNOWN. |
 | **Risks** | Direct file URL guessability is DERIVED. Absence of a signed-URL mechanism is limited to cited paths. SCORM dependency references are static facts; module runtime behavior is UNKNOWN. |
 
 ### CAP-005 · Course Progress Tracking
@@ -207,9 +207,9 @@ Monolithic Laravel 10 application with absent modular extension system (`nwidart
 | **Controllers** | `CourseProgressController` — methods: `checked`, `unchecked`, `checkedCourse`, `progressreport`, `progressview` |
 | **Models** | `CourseProgress` |
 | **DB Tables** | `course_progress` |
-| **Execution Flow** | User completes lesson → AJAX `checked($id)` → create/update `CourseProgress` record → recalculate overall % → return JSON. Instructor can view progress reports per student. |
-| **Access Control** | `checkAccess($class_id)` verifies enrollment before marking progress. |
-| **Side Effects** | Overall course completion % calculated. Certificate eligibility determined by 100% progress. |
+| **Execution Flow** | Cited `CourseProgressController` methods, route references, and `CourseProgress` record document progress-related paths (VERIFIED static inventory). AJAX completion, record persistence, percentage calculation, report visibility, and resulting learner state are UNKNOWN. |
+| **Access Control** | `checkAccess($class_id)` is a cited static reference (VERIFIED); enrollment authorization enforcement is UNKNOWN. |
+| **Side Effects** | Course-completion and certificate-eligibility behavior are UNKNOWN from current cited inventory. Any dependency on recorded progress is DERIVED. |
 
 ### CAP-006 · Shopping Cart
 
@@ -290,9 +290,9 @@ Monolithic Laravel 10 application with absent modular extension system (`nwidart
 | **Controllers** | `PayoutController` (instructor request), `AdminPayoutController` (admin approve), `CompletedPayoutController` (history) |
 | **Models** | `PendingPayout`, `CompletedPayout` |
 | **DB Tables** | `pending_payouts` (instructor_id, course_id, order_id, amount, status), `completed_payouts` |
-| **Execution Flow** | Sale occurs → `PendingPayout` created with instructor's revenue share → Instructor views pending payouts → requests payout → Admin reviews → marks as paid → moves to `CompletedPayout`. |
-| **Revenue Calculation** | `Setting.instructor_revenue` (percentage). Stored on `Order.instructor_revenue` and `PendingPayout.amount`. |
-| **Side Effects** | Bulk payout support via `AdminPayoutController@bulk_payout`. |
+| **Execution Flow** | Cited payout routes/controllers and `PendingPayout`/`CompletedPayout` records document instructor-request, admin-approval, and payout-history paths (VERIFIED static inventory). Sale linkage, payout persistence, review/payment completion, record movement, authorization, and resulting balances are UNKNOWN. |
+| **Revenue Calculation** | `Setting.instructor_revenue`, `Order.instructor_revenue`, and `PendingPayout.amount` are cited static references (VERIFIED); calculation correctness, persistence, and financial outcome are UNKNOWN. |
+| **Side Effects** | `AdminPayoutController@bulk_payout` is a cited static method reference (VERIFIED); bulk-payout execution and payment outcome are UNKNOWN. |
 
 ### CAP-012 · Quiz / Assessment System
 
@@ -677,7 +677,7 @@ Monolithic Laravel 10 application with absent modular extension system (`nwidart
 | **Purpose** | Allow non-registered users to purchase (limited) |
 | **Entry Points** | `web.php:85` |
 | **Controllers** | `GuestController@guestlogin` |
-| **Implementation** | Creates temporary user account with guest flag → checkout → convert to full account or delete |
+| **Implementation** | Cited guest route/controller reference documents a guest-checkout handling path (VERIFIED static inventory). Temporary-account creation, guest-flag assignment, checkout, conversion/deletion, authorization, and resulting account/order state are UNKNOWN. |
 
 ### CAP-046 · Gift / Send Course
 
@@ -706,7 +706,7 @@ Monolithic Laravel 10 application with absent modular extension system (`nwidart
 | **Controllers** | `InstructorPlanController`, `PlanController` |
 | **Models** | `Plan`, `UserPlan` |
 | **DB Tables** | `plans`, `user_plans` |
-| **Job** | `InstructorPlan` — handles subscription expiry |
+| **Job** | `InstructorPlan` is a cited job reference for subscription-expiry handling (VERIFIED static inventory). Subscription persistence, entitlement, queue dispatch/execution, expiry enforcement, and resulting plan/user state are UNKNOWN; operational impact is DERIVED. |
 
 ### CAP-049 · Search & Filter
 
@@ -748,10 +748,10 @@ Monolithic Laravel 10 application with absent modular extension system (`nwidart
 
 | Attribute | Detail |
 |---|---|
-| **Purpose** | View, edit, delete, refund orders |
+| **Purpose** | Admin order-management paths for viewing, editing, deleting, refund-related handling, and listed order operations (VERIFIED static inventory). |
 | **Entry Points** | `web.php:442-461` |
 | **Controllers** | `OrderController` — methods: `index`, `enrollUser`, `create`, `store`, `destroy`, `vieworder`, `purchasehistory`, `invoice`, `pdfdownload`, `apiinvoicepdfdownload`, `refundview`, `refundrequest`, `confirmation`, `status`, `fileImportExport`, `order_report` |
-| **Features** | Manual enrollment. Invoice PDF. Order export to Excel. Refund initiation. |
+| **Features** | Cited `OrderController` methods reference manual enrollment, invoice/PDF, export, and refund-related operation paths (VERIFIED static inventory). Authorization enforcement, order persistence, document/export generation or delivery, refund/provider completion, and resulting order state are UNKNOWN. |
 
 ### CAP-054 · Support Ticket System
 
